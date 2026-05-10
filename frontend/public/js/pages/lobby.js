@@ -21,7 +21,6 @@ function renderMenuPage(container) {
             </div>
             <div>
                 <div class="commander-name" id="cmd-name">${window.gameState.username || 'Commander'}</div>
-                <div class="commander-rank" id="cmd-rank">◈ LVL ?? · CLASSIFIED</div>
             </div>
             <div class="commander-stats">
                 <div class="cmd-stat">
@@ -196,7 +195,6 @@ function renderMenuPage(container) {
             // Sidebar
             document.getElementById('cmd-avatar').textContent = profile.username.slice(0, 2).toUpperCase();
             document.getElementById('cmd-name').textContent = profile.username.toUpperCase();
-            document.getElementById('cmd-rank').textContent = `◈ LVL ${profile.level} · ${profile.clearance || 'CLASSIFIED'}`;
             document.getElementById('cmd-wins').textContent = profile.wins || 0;
             document.getElementById('cmd-losses').textContent = profile.losses || 0;
             const rate = profile.gamesPlayed > 0 ? Math.round((profile.wins / profile.gamesPlayed) * 100) : 0;
