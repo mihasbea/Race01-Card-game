@@ -28,6 +28,9 @@ function renderPreGamePage(container) {
                 <div class="pregame-grid" id="pregame-grid"></div>
 
                 <div class="pregame-footer">
+                    <button class="pregame-cancel" id="pregame-cancel">
+                        ← LOBBY
+                    </button>
                     <div class="pregame-counter" id="pregame-counter">0 / 3 SELECTED</div>
                     <button class="btn-primary pregame-confirm" id="pregame-confirm" disabled>
                         CONFIRM SELECTION
@@ -86,6 +89,27 @@ function renderPreGamePage(container) {
     }
 
     renderCards();
+
+    document.getElementById('pregame-cancel').addEventListener('click', () => {
+        const btn = document.getElementById('pregame-cancel');
+        if (btn.dataset.confirming) {
+            window.appSocket.off('gameStart', onGameStart);
+            window.appSocket.off('selectionConfirmed', onSelectionConfirmed);
+            window.appSocket.emit('cancelPregame');
+            window.appRouter.navigate('lobby');
+        } else {
+            btn.dataset.confirming = '1';
+            btn.textContent = 'CONFIRM LEAVE?';
+            btn.classList.add('confirming');
+            setTimeout(() => {
+                if (btn.dataset.confirming) {
+                    delete btn.dataset.confirming;
+                    btn.textContent = '← LOBBY';
+                    btn.classList.remove('confirming');
+                }
+            }, 3000);
+        }
+    });
 
     confirmBtn.addEventListener('click', () => {
         if (selectedIds.length !== 3) return;

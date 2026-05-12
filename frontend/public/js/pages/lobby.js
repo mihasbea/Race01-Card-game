@@ -76,24 +76,24 @@ function renderMenuPage(container) {
         </div>
 
         <!-- Searching overlay (matchmaking) -->
-        <div id="match-searching" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:100; align-items:center; justify-content:center;">
-            <div style="text-align:center;">
-            <div class="searching-vs">
-                <div class="searching-you">
-                <div class="vs-avatar-you" id="search-you-init">${window.gameState.username ? window.gameState.username.slice(0,2).toUpperCase() : 'HE'}</div>
-                <div class="vs-you-name">${window.gameState.username || 'You'}</div>
+        <div id="match-searching">
+            <div class="searching-panel">
+                <div class="searching-vs">
+                    <div class="searching-you">
+                        <div class="vs-avatar-you" id="search-you-init">${window.gameState.username ? window.gameState.username.slice(0,2).toUpperCase() : 'HE'}</div>
+                        <div class="vs-you-name">${window.gameState.username || 'You'}</div>
+                    </div>
+                    <div class="vs-text-center">VS</div>
+                    <div class="searching-opp">
+                        <div class="vs-avatar-opp">?</div>
+                        <div class="vs-opp-name searching-dots">SEARCHING</div>
+                    </div>
                 </div>
-                <div class="vs-text-center">VS</div>
-                <div class="searching-opp">
-                <div class="vs-avatar-opp">?</div>
-                <div class="vs-opp-name searching-dots">SEARCHING</div>
+                <div class="search-timer-wrap">
+                    <div class="search-bar-track"><div class="search-bar-fill" id="search-bar"></div></div>
+                    <div class="search-timer-label">MATCHMAKING · <span id="search-elapsed">00:00</span></div>
                 </div>
-            </div>
-            <div class="search-timer-wrap">
-                <div class="search-bar-track"><div class="search-bar-fill" id="search-bar"></div></div>
-                <div class="search-timer-label">MATCHMAKING · <span id="search-elapsed">00:00</span></div>
-            </div>
-            <button class="btn btn-ghost btn-sm" id="btn-cancel-search">Cancel</button>
+                <button class="btn btn-ghost btn-sm" id="btn-cancel-search">Cancel</button>
             </div>
         </div>
 
@@ -114,9 +114,25 @@ function renderMenuPage(container) {
     let searchSeconds  = 0;
 
     const searchingOverlay = document.getElementById('match-searching');
+    const btnDeploySidebar = document.getElementById('btn-deploy');
+    const btnDeployMain = document.getElementById('btn-deploy-main');
+
+    function _enableDeployButtons() {
+        if (btnDeploySidebar) btnDeploySidebar.disabled = false;
+        if (btnDeployMain) btnDeployMain.disabled = false;
+    }
+
+    function _disableDeployButtons() {
+        if (btnDeploySidebar) btnDeploySidebar.disabled = true;
+        if (btnDeployMain) btnDeployMain.disabled = true;
+    }
 
     function _startSearch() {
-        searchingOverlay.style.display = 'flex';
+        if (searchingOverlay.classList.contains('active')) return;
+
+        searchingOverlay.classList.add('active');
+        _disableDeployButtons();
+
         searchSeconds = 0;
         if (searchInterval) clearInterval(searchInterval);
         searchInterval = setInterval(() => {
@@ -133,14 +149,21 @@ function renderMenuPage(container) {
         });
     }
 
-    document.getElementById('btn-deploy').addEventListener('click', _startSearch);
-    document.getElementById('btn-deploy-main').addEventListener('click', _startSearch);
-
-    document.getElementById('btn-cancel-search').addEventListener('click', () => {
+    function _cancelSearch() {
+        searchingOverlay.classList.remove('active');
         clearInterval(searchInterval);
-        searchingOverlay.style.display = 'none';
+        searchInterval = null;
         searchSeconds = 0;
-    });
+        _enableDeployButtons();
+
+        window.appSocket.emit('leaveQueue');
+    }
+
+    // Event listeners
+    btnDeploySidebar.addEventListener('click', _startSearch);
+    btnDeployMain.addEventListener('click', _startSearch);
+
+    document.getElementById('btn-cancel-search').addEventListener('click', _cancelSearch);
 
     document.getElementById('btn-collection').addEventListener('click', () => {
         window.appRouter.navigate('collection');
@@ -160,14 +183,26 @@ function renderMenuPage(container) {
     });
 
     window.appSocket.on('preGame', ({ side, cards }) => {
-        clearInterval(searchInterval);
-        searchingOverlay.style.display = 'none';
+        if (searchInterval) {
+            clearInterval(searchInterval);
+            searchInterval = null;
+        }
+        searchingOverlay.classList.remove('active');
+        _enableDeployButtons();
+
         window.gameState.preGameData = { side, cards };
         window.appRouter.navigate('pregame');
     });
 
     window.appSocket.on('gameStart', (data) => {
         if (window.gameState.currentPage === 'lobby') {
+            if (searchInterval) {
+                clearInterval(searchInterval);
+                searchInterval = null;
+            }
+            searchingOverlay.classList.remove('active');
+            _enableDeployButtons();
+
             window.gameState.game = data;
             window.appRouter.navigate('game');
         }
@@ -176,16 +211,16 @@ function renderMenuPage(container) {
     async function _loadProfileAndPopulate() {
         try {
             const profile = await window.api.getProfile();
-            window.gameState.userId   = profile.userId;
+            window.gameState.userId = profile.userId;
             window.gameState.username = profile.username;
-            window.gameState.avatar   = profile.avatar;
+            window.gameState.avatar = profile.avatar;
 
             document.getElementById('cmd-avatar').textContent = profile.username.slice(0, 2).toUpperCase();
-            document.getElementById('cmd-name').textContent   = profile.username.toUpperCase();
-            document.getElementById('cmd-wins').textContent   = profile.wins || 0;
+            document.getElementById('cmd-name').textContent = profile.username.toUpperCase();
+            document.getElementById('cmd-wins').textContent = profile.wins || 0;
             document.getElementById('cmd-losses').textContent = profile.losses || 0;
             const rate = profile.gamesPlayed > 0 ? Math.round((profile.wins / profile.gamesPlayed) * 100) : 0;
-            document.getElementById('cmd-rate').textContent   = rate + '%';
+            document.getElementById('cmd-rate').textContent = rate + '%';
 
             const winMsgEl = document.getElementById('sim-winrate-msg');
             if (winMsgEl) {

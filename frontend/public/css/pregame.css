@@ -93,6 +93,37 @@
     padding-top: 20px;
 }
 
+.pregame-cancel {
+    background: transparent;
+    border: 1px solid var(--border-2);
+    color: var(--text-dim);
+    font-family: var(--F-mono);
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    padding: 10px 18px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    flex-shrink: 0;
+}
+
+.pregame-cancel:hover {
+    border-color: rgba(168,85,247,0.45);
+    color: #c084fc;
+}
+
+.pregame-cancel.confirming {
+    border-color: rgba(168,85,247,0.7);
+    color: #c084fc;
+    box-shadow: 0 0 10px rgba(168,85,247,0.2);
+    animation: cancelPulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes cancelPulse {
+    from { box-shadow: 0 0 6px rgba(168,85,247,0.15); }
+    to   { box-shadow: 0 0 16px rgba(168,85,247,0.4); }
+}
+
 .pregame-counter {
     font-family: var(--F-mono);
     font-size: 13px;
