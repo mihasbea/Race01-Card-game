@@ -35,10 +35,11 @@ class BattleRepository {
      * @param {number} limit - Max number of records to return.
      * @returns {Promise<Array<Battle>>}
      */
-    async getHistoryByUserId(userId, limit = 20) {
+    async getHistoryByUserId(userId, limit = 10) {
         try {
             const [rows] = await pool.query(
-                `SELECT * FROM battles 
+                `USE card_game;
+                 SELECT * FROM battles 
                  WHERE user1_id = ? OR user2_id = ? 
                  ORDER BY battle_time DESC 
                  LIMIT ?`,
@@ -49,6 +50,30 @@ class BattleRepository {
             return rows.map(row => new Battle(row));
         } catch (error) {
             console.error(`[BattleRepository.getHistoryByUserId] Error for user ${userId}:`, error.message);
+            throw error;
+        }
+    }
+
+    async getRecentMatches(userId, limit = 10) {
+        try {
+            const [rows] = await pool.query(
+                `USE card_game;
+                 SELECT 
+                    b.*, 
+                    u1.username AS user1Username, 
+                    u2.username AS user2Username,
+                    CASE WHEN b.winner_id = ? THEN 'win' ELSE 'loss' END as result
+                FROM battles b
+                JOIN users u1 ON b.user1_id = u1.id
+                JOIN users u2 ON b.user2_id = u2.id
+                WHERE b.user1_id = ? OR b.user2_id = ? 
+                ORDER BY b.battle_time DESC 
+                LIMIT ?`,
+                [userId, userId, userId, limit]
+            );
+            return rows;
+        } catch (error) {
+            console.error('[BattleRepository.getRecentMatches] Error:', error.message);
             throw error;
         }
     }

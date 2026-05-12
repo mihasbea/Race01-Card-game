@@ -55,7 +55,7 @@ class UserService {
         };
     }
 
-    async findeById(id) {
+    async findById(id) {
         return await UserRepository.findOne('id', id);
     }
 

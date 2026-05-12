@@ -10,7 +10,6 @@ CREATE TABLE if NOT EXISTS users (
     wins INT DEFAULT 0,
     lost INT DEFAULT 0,
     winrate DECIMAL(5, 2) DEFAULT 0.00,
-    lvl INT DEFAULT 1,
     avatar MEDIUMBLOB
 );
 

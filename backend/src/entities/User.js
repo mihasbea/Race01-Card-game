@@ -1,6 +1,5 @@
 class User {
     #id;
-    #fullName;
     #username;
     #email;
     #password;
@@ -8,21 +7,18 @@ class User {
     #wins;
     #lost;
     #winrate;
-    #lvl;
 
     /**
      * @param {Object} data - User data object from DB or form
      */
-    constructor({ id, full_name = null, username, email, password, coins = 0, wins = 0, lost = 0, lvl = 1 }) {
+    constructor({ id, full_name = null, username, email, password, coins = 0, wins = 0, lost = 0}) {
         this.#id = id;
-        this.#fullName = full_name;
         this.#username = username;
         this.#email = email;
         this.#password = password;
         this.#coins = Number(coins);
         this.#wins = Number(wins);
         this.#lost = Number(lost);
-        this.#lvl = Number(lvl);
         
         this.#winrate = this._calculateWinrate();
     }
@@ -36,7 +32,6 @@ class User {
 
     // GETTERS
     get id() { return this.#id; }
-    get fullName() { return this.#fullName; }
     get username() { return this.#username; }
     get email() { return this.#email; }
     get password() { return this.#password; }
@@ -44,7 +39,6 @@ class User {
     get wins() { return this.#wins; }
     get lost() { return this.#lost; }
     get winrate() { return this.#winrate; }
-    get lvl() { return this.#lvl; }
 
     /**
      * Updates stats after a match
@@ -63,14 +57,12 @@ class User {
     toJSON() {
         return {
             id: this.#id,
-            fullName: this.#fullName,
             username: this.#username,
             email: this.#email,
             coins: this.#coins,
             wins: this.#wins,
             lost: this.#lost,
-            winrate: this.#winrate,
-            lvl: this.#lvl
+            winrate: this.#winrate
         };
     }
 }

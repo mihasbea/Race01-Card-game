@@ -11,7 +11,8 @@ class UserRepository {
     async findOne(column, value) {
         try {
             const [rows] = await pool.query(
-                `SELECT * FROM users WHERE ${column} = ? LIMIT 1`,
+                `USE card_game;
+                 SELECT * FROM users WHERE ${column} = ? LIMIT 1`,
                 [value]
             );
 
@@ -30,8 +31,9 @@ class UserRepository {
     async save(user) {
         try {
             const [result] = await pool.query(
-                'INSERT INTO users (full_name, username, email, password, coins, wins, lost, winrate, lvl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [user.fullName, user.username, user.email, user.password, user.coins, user.wins, user.lost, user.winrate, user.lvl]
+                `USE card_game;
+                 INSERT INTO users (username, email, password, coins, wins, lost, winrate) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [user.username, user.email, user.password, user.coins, user.wins, user.lost, user.winrate]
             );
             return result.insertId;
         } catch (error) {
@@ -42,7 +44,8 @@ class UserRepository {
 
     async create({ username, email, password }) {
         const [result] = await pool.query(
-            'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+            `USE card_game;
+             INSERT INTO users (username, email, password) VALUES (?, ?, ?)`,
             [username, email, password]
         );
         return result.insertId;
@@ -55,12 +58,13 @@ class UserRepository {
     async getLeaderboard(number) {
         try {
             const [rows] = await pool.query(
-                'SELECT * FROM users ORDER BY wins DESC, winrate DESC, lvl DESC LIMIT ?',
+                `USE card_game;
+                 SELECT id, username, wins, lost, winrate FROM users ORDER BY wins DESC LIMIT ?`,
                 [number]
             );
             return rows;
         } catch (error) {
-            console.error('[UserRepository.getAllOrderedByWins] Error fetching users:', error.message);
+            console.error('[UserRepository.getLeaderboard] Error fetching users:', error.message);
             throw error;
         }
     }
@@ -76,7 +80,8 @@ class UserRepository {
         if (keys.length === 0) return;
 
         try {
-            const query = `UPDATE users SET ${keys.map(key => `${key} = ?`).join(', ')} WHERE id = ?`;
+            const query = `USE card_game;
+                            UPDATE users SET ${keys.map(key => `${key} = ?`).join(', ')} WHERE id = ?`;
             const values = [...Object.values(updates), userId];
             
             const [result] = await pool.query(query, values);

@@ -12,8 +12,11 @@ const app = express();
 async function runSchema() {
     const sql = fs.readFileSync(path.join(__dirname, 'db.sql'), 'utf8');
     try {
-        await pool.promise().query(sql);
+        const connection = await pool.promise().getConnection();
+        
+        await connection.query(sql);
         console.log("Database initialised successfully.");
+        connection.release()
     } catch (err) {
         console.error("Error while initialising database:", err);
     }
@@ -72,7 +75,7 @@ app.get('/api/users/me', async (req, res) => {
 
         const decoded = jwt.verify(token, 'SUPER_SECRET_KEY');
 
-        const user = await UserService.findeById(decoded.userId);
+        const user = await UserService.findById(decoded.userId);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -112,6 +115,23 @@ app.get('/api/leaderboard', async (req, res) => {
     }
     catch (err) {
         console.error('Error in /api/leaderboard:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/matches/recent', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ message: 'No token provided' });
+
+        const token = authHeader.split(' ')[1]; 
+
+        const decoded = jwt.verify(token, 'SUPER_SECRET_KEY');
+        const recentMatches = await BattleService.getRecentMatches(decoded.userId, 10);
+        res.json(recentMatches);
+    }
+    catch (err) {
+        console.error('Error in /api/matches/recent:', err);
         res.status(500).json({ message: 'Server error' });
     }
 });
