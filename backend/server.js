@@ -28,8 +28,14 @@ app.post('/api/auth/register', async (req, res) => {
         const { username, email, password } = req.body;
         const user = await UserService.createUser({ username, email, password });
         
+        const token = jwt.sign(
+            { userId: user.id, username: user.username }, 
+            'SUPER_SECRET_KEY', 
+            { expiresIn: '24h' }
+        );
+
         res.status(201).json({ 
-            token: 'real-jwt-token-from-server', 
+            token: token, 
             username: user.username 
         });
     } catch (err) {
@@ -55,6 +61,8 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+
+// TODO: Move token verification to service(when is possible)
 app.get('/api/users/me', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
@@ -82,6 +90,29 @@ app.get('/api/users/me', async (req, res) => {
     } catch (err) {
         console.error('Error in /api/users/me:', err);
         res.status(401).json({ message: 'Invalid or expired token' });
+    }
+});
+
+app.get('/api/leaderboard', async (req, res) => {
+    try {
+        const players = await UserService.getLeaderboard(20);
+        
+        const leaderboard = players.map((p, index) => ({
+            rank: index + 1,
+            userId: p.id,
+            username: p.username,
+            wins: p.wins || 0,
+            losses: p.losses || 0,
+            winRate: p.wins + p.losses > 0 
+                ? Math.round((p.wins / (p.wins + p.losses)) * 100) 
+                : 0
+        }));
+
+        res.json(leaderboard);
+    }
+    catch (err) {
+        console.error('Error in /api/leaderboard:', err);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 

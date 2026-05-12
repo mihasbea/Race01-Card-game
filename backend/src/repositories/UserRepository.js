@@ -52,10 +52,11 @@ class UserRepository {
      * Retrieves all users sorted by wins, winrate, and level.
      * @returns {Promise<Array>} An array of user objects.
      */
-    async getAllOrderedByWins() {
+    async getLeaderboard(number) {
         try {
             const [rows] = await pool.query(
-                'SELECT * FROM users ORDER BY wins DESC, winrate DESC, lvl DESC LIMIT 10'
+                'SELECT * FROM users ORDER BY wins DESC, winrate DESC, lvl DESC LIMIT ?',
+                [number]
             );
             return rows;
         } catch (error) {

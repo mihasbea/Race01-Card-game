@@ -58,6 +58,10 @@ class UserService {
     async findeById(id) {
         return await UserRepository.findOne('id', id);
     }
+
+    async getLeaderboard(number = 10) {
+        return await UserRepository.getLeaderboard(number);
+    }
 }
 
 module.exports = new UserService();

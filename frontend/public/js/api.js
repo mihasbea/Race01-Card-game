@@ -31,20 +31,6 @@ async function _request(method, endpoint, body = null) {
  * ACTUAL CALL (uncomment later):
  * return _request(‘POST’, ‘/auth/register’, { username, password });
  */
-// async function apiRegister(username, password) {
-//     return new Promise((resolve, reject) => {
-//         setTimeout(() => {
-//         if (!username || !password) {
-//             return reject(new Error('Please fill in all the fields'));
-//         }
-//         if (username.length < 3) {
-//             return reject(new Error('Username is too short'));
-//         }
-//         //Simulate a success: return a fake JWT
-//         resolve({ token: 'mock-jwt-register-' + Date.now() });
-//         }, 800); // 0.8-second delay — simulation of a network request
-//     });
-// }
 async function apiRegister(username, email, password) {
     return _request('POST', '/auth/register', { username, email, password });
 }
@@ -58,18 +44,6 @@ async function apiRegister(username, email, password) {
  * ACTUAL CALL (uncomment later):
  * return _request('POST', '/auth/login', { username, password });
  */
-// async function apiLogin(username, password) {
-//     return new Promise((resolve, reject) => {
-//         setTimeout(() => {
-//         if (!username || !password) {
-//             return reject(new Error('Please fill in all the fields'));
-//         }
-//         // You can simulate an error for testing purposes:
-//         // if (username !== ‘hero’) return reject(new Error(‘Invalid username or password’));
-//         resolve({ token: 'mock-jwt-login-' + Date.now() });
-//         }, 600);
-//     });
-// }
 async function apiLogin(username, password) {
     return _request('POST', '/auth/login', { username, password });
 }
@@ -91,16 +65,15 @@ async function apiGetRecentMatches() {
         { result: 'loss', opponent: 'MagnetoMax', opponentClearance: 'Platinum', unitsDeployed: 5, turns: 20, timeAgo: 'Yesterday, 19:10' },
         // ...
     ];
+
+    //return _request('GET', '/matches/recent');
 }
 window.apiGetRecentMatches = apiGetRecentMatches;
 
 async function apiGetLeaderboard() {
-    return [
-        { rank: 1, username: 'ThanosWins', wins: 142, losses: 18, winRate: 89, userId: 'u3' },
-        { rank: 12, username: '{current username}', wins: 48, losses: 17, winRate: 74, userId: window.gameState.userId },
-        // ...
-    ];
+    return _request('GET', '/leaderboard');
 }
+
 window.apiGetLeaderboard = apiGetLeaderboard;
 
 window.apiGetLeaderboard = apiGetLeaderboard;
