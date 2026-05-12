@@ -1,0 +1,43 @@
+[class*="art-"] {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center top;
+}
+
+.pregame-card-art-sym,
+.hcard-art-sym,
+.bcard-art-symbol {
+    display: none !important;
+}
+
+.art-ironman    { background-image: url('../assets/images/heroes/iron_man.jpg');    }
+.art-thor       { background-image: url('../assets/images/heroes/thor.jpg');       }
+.art-cap        { background-image: url('../assets/images/heroes/cap.jpg');        }
+.art-hulk       { background-image: url('../assets/images/heroes/hulk.jpg');       }
+.art-strange    { background-image: url('../assets/images/heroes/strange.jpg');    }
+.art-spiderman  { background-image: url('../assets/images/heroes/spiderman.jpg');  }
+.art-widow      { background-image: url('../assets/images/heroes/widow.jpg');      }
+.art-panther    { background-image: url('../assets/images/heroes/panther.jpg');    }
+.art-hawkeye    { background-image: url('../assets/images/heroes/hawkeye.jpg');    }
+.art-antman     { background-image: url('../assets/images/heroes/antman.jpg');     }
+.art-wanda      { background-image: url('../assets/images/heroes/wanda.jpg');      }
+.art-vision     { background-image: url('../assets/images/heroes/vision.jpg');     }
+.art-bucky      { background-image: url('../assets/images/heroes/bucky.jpg');      }
+.art-falcon     { background-image: url('../assets/images/heroes/falcon.jpg');     }
+.art-warmachine { background-image: url('../assets/images/heroes/warmachine.jpg'); }
+
+.art-thanos      { background-image: url('../assets/images/villains/thanos.jpg');      }
+.art-loki        { background-image: url('../assets/images/villains/loki.jpg');        }
+.art-ultron      { background-image: url('../assets/images/villains/ultron.jpg');      }
+.art-hela        { background-image: url('../assets/images/villains/hela.jpg');        }
+.art-magneto     { background-image: url('../assets/images/villains/magneto.jpg');     }
+.art-venom       { background-image: url('../assets/images/villains/venom.jpg');       }
+.art-redskull    { background-image: url('../assets/images/villains/redskull.jpg');    }
+.art-modok       { background-image: url('../assets/images/villains/modok.jpg');       }
+.art-crossbones  { background-image: url('../assets/images/villains/crossbones.jpg');  }
+.art-dormammu    { background-image: url('../assets/images/villains/dormammu.jpg');    }
+.art-taskmaster  { background-image: url('../assets/images/villains/taskmaster.jpg');  }
+.art-abomination { background-image: url('../assets/images/villains/abomination.jpg'); }
+.art-whiplash    { background-image: url('../assets/images/villains/whiplash.jpg');    }
+.art-ronan       { background-image: url('../assets/images/villains/ronan.jpg');       }
+.art-goblin      { background-image: url('../assets/images/villains/goblin.jpg');      }

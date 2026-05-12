@@ -15,7 +15,6 @@ const mockSocket = (() => {
         (_handlers[event] || []).forEach(f => f(data));
     }
 
-    // ── Card pools ──
     const ALL_HEROES = [
         { id: 'ironman',    name: 'IRON MAN',      alias: 'Tony Stark',        atk: 8,  def: 5, cost: 5, hp: 10, art: 'art-ironman',    sym: '⚙' },
         { id: 'thor',       name: 'THOR',           alias: 'God of Thunder',    atk: 10, def: 3, cost: 6, hp: 12, art: 'art-thor',       sym: '⚡' },
@@ -233,7 +232,6 @@ const mockSocket = (() => {
                 _pgState.yourReserve  = res;
                 _pgState.yourReady    = true;
 
-                // Опонент вибирає миттєво після вас
                 if (!_pgState.oppReady) {
                     const shuffled = [..._pgState.oppCards].sort(() => Math.random() - 0.5);
                     _pgState.oppSelected = shuffled.slice(0, 3);

@@ -28,21 +28,12 @@
 .login-bg-glow.blue  { left: -60px; top: 15%; background: radial-gradient(circle, rgba(0,212,255,0.09) 0%, transparent 70%); }
 .login-bg-glow.gold  { right: 20%; bottom: -80px; background: radial-gradient(circle, rgba(200,158,59,0.07) 0%, transparent 70%); }
 
-.login-layout {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    gap: 56px;
-    position: relative;
-    z-index: 1;
-}
-
 .login-promo {
     flex: 0 0 400px;
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    justify-content: center;
+    gap: 32px;
 }
 
 .login-logo { display: flex; flex-direction: column; gap: 6px; }
@@ -66,7 +57,10 @@
     text-transform: uppercase;
 }
 
-.login-logo h1 span { color: var(--gold); text-shadow: 0 0 24px var(--gold-gl); }
+.login-logo h1 .combat-title {
+    color: #a855f7;
+    text-shadow: 0 0 24px rgba(168,85,247,0.55), 0 0 60px rgba(168,85,247,0.2);
+}
 
 .login-logo .tagline {
     font-family: var(--F-mono);
@@ -77,37 +71,93 @@
     line-height: 1.5;
 }
 
-.login-boot-log {
-    font-family: var(--F-mono);
-    font-size: 10px;
-    letter-spacing: 0.5px;
-    color: var(--j-blue);
-    line-height: 1.8;
-    border-left: 2px solid rgba(0,212,255,0.4);
-    padding-left: 14px;
-    opacity: 0.8;
+.jarvis-terminal {
+    border: 1px solid rgba(0,212,255,0.18);
+    border-left: 2px solid var(--j-blue);
+    background: rgba(0,0,0,0.28);
+    padding: 14px 16px 16px;
 }
 
-.login-boot-log div::before { content: '▸ '; opacity: 0.55; }
-
-.login-features { display: flex; flex-direction: column; gap: 11px; }
-
-.login-feature {
+.jarvis-terminal-bar {
     display: flex;
     align-items: center;
-    gap: 12px;
-    color: var(--text-mid);
-    font-family: var(--F-ui);
-    font-size: 13px;
-    letter-spacing: 0.4px;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0,212,255,0.1);
 }
 
-.feat-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-.feat-dot.blue { background: var(--j-blue);  box-shadow: 0 0 7px var(--j-blue); }
-.feat-dot.gold { background: var(--gold);     box-shadow: 0 0 7px var(--gold); }
-.feat-dot.ally { background: var(--ally-hi);  box-shadow: 0 0 7px var(--ally-hi); }
+.jarvis-terminal-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--j-blue);
+    box-shadow: 0 0 6px var(--j-blue);
+    animation: termDotPulse 2s ease-in-out infinite;
+}
 
-.login-build { font-family: var(--F-mono); font-size: 9px; letter-spacing: 2px; color: var(--text-dim); }
+@keyframes termDotPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+.jarvis-terminal-label {
+    font-family: var(--F-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--j-blue);
+    opacity: 0.6;
+    text-transform: uppercase;
+}
+
+.jarvis-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.jarvis-line {
+    font-family: var(--F-mono);
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    color: var(--j-blue);
+    line-height: 1.65;
+    opacity: 0.85;
+    animation: jarvisLineIn 0.22s ease both;
+}
+
+@keyframes jarvisLineIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 0.85; transform: none; }
+}
+
+.jarvis-prefix {
+    opacity: 0.45;
+    margin-right: 2px;
+}
+
+.jarvis-cursor {
+    display: inline-block;
+    width: 7px;
+    height: 11px;
+    background: var(--j-blue);
+    vertical-align: middle;
+    margin-left: 1px;
+    animation: cursorBlink 0.6s step-end infinite;
+    transition: opacity 0.3s ease;
+}
+
+@keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}
+
+.login-build {
+    font-family: var(--F-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+}
 
 .login-card {
     position: relative;
@@ -116,7 +166,6 @@
     background: var(--bg-glass);
     backdrop-filter: blur(24px);
     border: 1px solid var(--border-2);
-
     padding: 28px 28px 24px;
     box-shadow: 0 20px 70px rgba(0,0,0,0.7), 0 0 40px rgba(0,212,255,0.05);
 }

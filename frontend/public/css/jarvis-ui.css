@@ -111,8 +111,8 @@
 .form-input:focus {
     background: var(--j-blue-lo);
     border-color: var(--border-2);
-    border-bottom-color: var(--gold);
-    box-shadow: 0 4px 16px rgba(0,212,255,0.06);
+    border-bottom-color: #a855f7;
+    box-shadow: 0 4px 16px rgba(168,85,247,0.08);
 }
 
 .form-input::placeholder { color: var(--text-dim); font-size: 12px; }

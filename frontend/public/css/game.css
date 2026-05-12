@@ -26,7 +26,7 @@
 }
 
 .game-topbar-info b { color: var(--j-blue); }
-.game-topbar-info.threat b { color: var(--threat-hi); }
+.game-topbar-info.threat b { color: #a855f7; }
 
 .game-topbar-sep {
     width: 1px; height: 16px;
@@ -88,7 +88,7 @@
 
 .zone-opponent {
     flex: 1;
-    background: linear-gradient(to bottom, rgba(168,28,38,0.04), transparent);
+    background: linear-gradient(to bottom, rgba(168,85,247,0.04), transparent);
     display: flex;
     align-items: center;
     padding: 14px 18px;
@@ -104,7 +104,7 @@
     font-family: var(--F-mono);
     font-size: 8px;
     letter-spacing: 3px;
-    color: var(--threat-hi);
+    color: #a855f7;
     opacity: 0.35;
     text-transform: uppercase;
 }
@@ -179,20 +179,20 @@
 
 .combatant-avatar.threat-av {
     background: linear-gradient(135deg, #1a0008, #280a10);
-    border: 1.5px solid var(--threat);
-    color: var(--threat-hi);
-    box-shadow: 0 0 12px rgba(168,28,38,0.3);
+    border: 1.5px solid #a855f7;
+    color: #a855f7;
+    box-shadow: 0 0 12px rgba(168,85,247,0.3);
 }
 
 .combatant-avatar.threat-av.targetable {
     cursor: crosshair;
-    box-shadow: 0 0 18px rgba(168,28,38,0.6);
+    box-shadow: 0 0 18px rgba(168,85,247,0.6);
     animation: targetPulse 1s ease-in-out infinite;
 }
 
 @keyframes targetPulse {
-    0%,100% { box-shadow: 0 0 12px rgba(168,28,38,0.4); }
-    50%      { box-shadow: 0 0 24px rgba(168,28,38,0.8); }
+    0%,100% { box-shadow: 0 0 12px rgba(168,85,247,0.4); }
+    50%      { box-shadow: 0 0 24px rgba(168,85,247,0.8); }
 }
 
 .combatant-avatar.cmd-av {
@@ -237,8 +237,8 @@
 }
 
 .hp-bar-fill.threat-hp {
-    background: linear-gradient(to right, var(--threat), var(--threat-hi));
-    box-shadow: 0 0 6px var(--threat-gl);
+    background: linear-gradient(to right, #7c3aed, #a855f7);
+    box-shadow: 0 0 6px rgba(168,85,247,0.32);
 }
 
 .hp-bar-fill.cmd-hp {
@@ -293,8 +293,8 @@
 .board-slot.targetable {
     cursor: crosshair;
     border-style: solid;
-    border-color: rgba(168,28,38,0.5);
-    box-shadow: 0 0 12px rgba(168,28,38,0.2);
+    border-color: rgba(168,85,247,0.5);
+    box-shadow: 0 0 12px rgba(168,85,247,0.2);
 }
 
 .game-actions {
@@ -491,8 +491,8 @@
 }
 
 .bcard.targetable .bcard-inner {
-    border-color: var(--threat-hi);
-    box-shadow: 0 0 0 1px rgba(217,48,63,0.5), 0 0 16px var(--threat-gl);
+    border-color: #a855f7;
+    box-shadow: 0 0 0 1px rgba(168,85,247,0.5), 0 0 16px rgba(168,85,247,0.32);
     animation: targetPulse 1s ease-in-out infinite;
 }
 
@@ -511,12 +511,12 @@
 }
 
 .bcard.threat-card .bcard-inner {
-    border-color: rgba(168,28,38,0.4);
+    border-color: rgba(168,85,247,0.4);
 }
 
 .bcard-top-bar { height: 3px; flex-shrink: 0; }
 .bcard.cmd-card .bcard-top-bar    { background: var(--j-blue); }
-.bcard.threat-card .bcard-top-bar { background: var(--threat); }
+.bcard.threat-card .bcard-top-bar { background: #a855f7; }
 
 .bcard-cost {
     position: absolute;
@@ -592,7 +592,7 @@
     background: repeating-linear-gradient(
         45deg, #060616, #060616 4px, #09092a 4px, #09092a 8px
     );
-    border-color: rgba(168,28,38,0.25);
+    border-color: rgba(168,85,247,0.25);
     cursor: default;
 }
 
@@ -619,14 +619,14 @@
 
 .opp-hand-card {
     width: 50px; height: 72px;
-    border: 1px solid rgba(168,28,38,0.3);
+    border: 1px solid rgba(168,85,247,0.3);
     background: repeating-linear-gradient(
         45deg, #060616, #060616 3px, #09092a 3px, #09092a 6px
     );
     display: flex; align-items: center; justify-content: center;
     font-family: var(--F-display);
     font-size: 14px;
-    color: var(--threat);
+    color: #a855f7;
     opacity: 0.5;
 }
 
@@ -790,13 +790,13 @@
 }
 
 .bcard.attack-target .bcard-inner {
-    border-color: var(--threat) !important;
-    box-shadow: 0 0 18px rgba(255,60,20,0.6) !important;
+    border-color: #a855f7 !important;
+    box-shadow: 0 0 18px rgba(168,85,247,0.65) !important;
     animation: target-flash 0.5s ease-in-out infinite alternate;
 }
 @keyframes target-flash {
-    from { box-shadow: 0 0 10px rgba(255,60,20,0.4); }
-    to   { box-shadow: 0 0 24px rgba(255,60,20,0.8); }
+    from { box-shadow: 0 0 10px rgba(168,85,247,0.4); }
+    to   { box-shadow: 0 0 26px rgba(168,85,247,0.85); }
 }
 
 .art-hawkeye    { background: linear-gradient(155deg, #0a1808 0%, #1a3010 40%, #284820 70%, #806010 100%); }

@@ -7,12 +7,12 @@ function renderPreGamePage(container) {
     }
     const { side, cards } = pg;
     const sideLabel = side === 'hero' ? '◈ HEROES' : '⚠ VILLAINS';
-    const sideColor = side === 'hero' ? 'var(--j-blue)' : 'var(--threat)';
+    const sideColor = side === 'hero' ? 'var(--j-blue)' : '#a855f7';
     let selectedIds = [];
 
     container.innerHTML = `
         <div class="page" id="page-pregame">
-            <div class="pregame-panel">
+            <div class="pregame-panel ${side === 'hero' ? 'pg-hero' : 'pg-villain'}">
                 <div class="corner tl"></div>
                 <div class="corner tr"></div>
                 <div class="corner bl"></div>
@@ -47,29 +47,22 @@ function renderPreGamePage(container) {
         grid.innerHTML = cards.map(card => {
             const isSelected = selectedIds.includes(card.instanceId);
             return `
-                <div class="pregame-card ${isSelected ? 'selected' : ''}"
-                        data-iid="${card.instanceId}"
-                        style="--side-color: ${sideColor}">
-                    <div class="pregame-card-inner">
-                        <div class="pregame-card-top"></div>
-                        <div class="pregame-card-cost">${card.cost}</div>
-                        <div class="pregame-card-name">${card.name}</div>
-                        <div class="pregame-card-alias">${card.alias || ''}</div>
-                        <div class="pregame-card-art">
-                            <div class="pregame-card-art-bg ${card.art}"></div>
-                            <div class="pregame-card-art-sym">${card.sym}</div>
+                <div class="pregame-card hcard ${isSelected ? 'selected' : ''}"
+                        data-iid="${card.instanceId}">
+                    <div class="hcard-inner">
+                        <div class="hcard-top" style="background:${sideColor};"></div>
+                        <div class="hcard-cost-badge">${card.cost}</div>
+                        <div class="hcard-name">${card.name}</div>
+                        <div class="hcard-art">
+                            <div class="hcard-art-bg ${card.art}"></div>
+                            <div class="hcard-art-sym">${card.sym}</div>
                         </div>
-                        <div class="pregame-card-stats">
-                            <div class="pregame-stat atk">
-                                <span>ATK</span> ${card.atk}
-                            </div>
-                            <div class="pregame-stat def">
-                                <span>DEF</span> ${card.def}
-                            </div>
+                        <div class="hcard-stats">
+                            <div class="hstat atk">${card.atk}</div>
+                            <div class="hstat def">${card.def}</div>
                         </div>
-                        <div class="pregame-card-hp">HP ${card.hp} · COST ${card.cost}</div>
-                        ${isSelected ? '<div class="pregame-card-check">✓</div>' : ''}
                     </div>
+
                 </div>
             `;
         }).join('');

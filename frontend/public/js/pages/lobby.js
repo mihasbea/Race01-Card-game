@@ -1,5 +1,3 @@
-// js/pages/lobby.js
-
 function renderMenuPage(container) {
     if (!window.gameState.token) {
         window.appRouter.navigate('login');
@@ -117,7 +115,6 @@ function renderMenuPage(container) {
 
     const searchingOverlay = document.getElementById('match-searching');
 
-    // ── Deploy buttons ──
     function _startSearch() {
         searchingOverlay.style.display = 'flex';
         searchSeconds = 0;
@@ -162,9 +159,6 @@ function renderMenuPage(container) {
         window.appRouter.navigate('login');
     });
 
-    // ── Socket listeners ──
-
-    // Коли знайдено опонента — переходимо на вибір карт
     window.appSocket.on('preGame', ({ side, cards }) => {
         clearInterval(searchInterval);
         searchingOverlay.style.display = 'none';
@@ -172,16 +166,13 @@ function renderMenuPage(container) {
         window.appRouter.navigate('pregame');
     });
 
-    // Якщо з якоїсь причини gameStart приходить, коли ми в лобі (не повинно, але про всяк випадок)
     window.appSocket.on('gameStart', (data) => {
-        // Просто зберігаємо гру і переходимо, якщо ми ще на лобі (перевіряємо через currentPage)
         if (window.gameState.currentPage === 'lobby') {
             window.gameState.game = data;
             window.appRouter.navigate('game');
         }
     });
 
-    // ── Profile & lists ──
     async function _loadProfileAndPopulate() {
         try {
             const profile = await window.api.getProfile();

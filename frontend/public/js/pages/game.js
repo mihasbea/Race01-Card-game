@@ -68,7 +68,7 @@ function renderGamePage(container) {
 function _buildLayout(game) {
     const isMyTurn  = game.currentTurn === 'you';
     const sideLabel = game.you.side === 'hero' ? '◈ HEROES' : '⚠ VILLAINS';
-    const sideColor = game.you.side === 'hero' ? 'var(--j-blue)' : 'var(--threat)';
+    const sideColor = game.you.side === 'hero' ? 'var(--j-blue)' : '#a855f7';
 
     return `
     <div class="page" id="page-game">
@@ -219,7 +219,7 @@ function _renderHand(cards = []) {
     return cards.map((card, idx) => `
         <div class="hcard" data-hand-idx="${idx}" data-instance="${card.instanceId}">
             <div class="hcard-inner">
-                <div class="hcard-top" style="background:var(--j-blue);"></div>
+                <div class="hcard-top" style="background:${window.gameState.game?.you.side==='villain'?'#a855f7':'var(--j-blue)'};"></div>
                 <div class="hcard-cost-badge">${card.cost}</div>
                 <div class="hcard-name">${card.name}</div>
                 <div class="hcard-art">

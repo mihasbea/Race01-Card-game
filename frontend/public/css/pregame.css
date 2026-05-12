@@ -47,167 +47,41 @@
     margin-bottom: 28px;
 }
 
-.pregame-instruction span {
-    color: var(--j-blue);
-    opacity: 0.9;
-}
+.pregame-instruction span { color: var(--j-blue); opacity: 0.9; }
 
 .pregame-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(7, 72px);
+    gap: 14px;
+    justify-content: center;
     margin-bottom: 28px;
 }
 
 .pregame-card {
-    background: var(--bg-card);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 6px 10px;
+    position: relative;
     cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-.pregame-card:hover {
-    border-color: var(--j-blue-md);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+.pregame-card .hcard { cursor: pointer; }
+.pregame-card.selected .hcard-inner {
+    border-color: transparent;
+    box-shadow: none;
 }
 
-.pregame-card.selected {
-    border-color: var(--side-color);
-    box-shadow: 0 0 20px var(--side-color, rgba(0,212,255,0.5));
-    transform: translateY(-8px);
-    background: linear-gradient(145deg, var(--bg-2), var(--bg-card));
+.pg-hero .pregame-card.selected .hcard-inner {
+    border-color: var(--j-blue) !important;
+    box-shadow: 0 0 0 1px var(--j-blue), 0 0 20px rgba(0,212,255,0.45) !important;
+}
+.pg-hero .pregame-card.selected .hcard {
+    transform: translateY(-10px) scale(1.08);
 }
 
-.pregame-card-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
+.pg-villain .pregame-card.selected .hcard-inner {
+    border-color: #a855f7 !important;
+    box-shadow: 0 0 0 1px #a855f7, 0 0 20px rgba(168,85,247,0.45) !important;
 }
-
-.pregame-card-top {
-    width: 100%;
-    height: 3px;
-    background: var(--j-blue);
-    border-radius: 1px 1px 0 0;
-    margin-bottom: 4px;
-}
-
-.pregame-card.selected .pregame-card-top {
-    background: var(--side-color);
-}
-
-.pregame-card-cost {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: var(--bg-3);
-    border: 1px solid var(--border-2);
-    border-radius: 4px;
-    padding: 1px 5px;
-    font-family: var(--F-mono);
-    font-size: 10px;
-    color: var(--gold);
-    z-index: 2;
-}
-
-.pregame-card-name {
-    font-family: var(--F-display);
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    color: var(--text);
-    text-align: center;
-    margin-bottom: 1px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
-.pregame-card-alias {
-    font-family: var(--F-mono);
-    font-size: 8px;
-    color: var(--text-dim);
-    letter-spacing: 0.5px;
-    text-align: center;
-    margin-bottom: 6px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
-.pregame-card-art {
-    position: relative;
-    width: 100%;
-    height: 70px;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}
-
-.pregame-card-art-bg {
-    position: absolute;
-    inset: 0;
-    background-size: cover;
-    background-position: center;
-    opacity: 0.85;
-}
-
-.pregame-card-art-bg.art-ironman { background-color: #b02020; }
-.pregame-card-art-bg.art-thor { background-color: #3a3a80; }
-
-.pregame-card-art-sym {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-    opacity: 0.9;
-    text-shadow: 0 0 12px var(--j-blue-gl);
-}
-
-.pregame-card-stats {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-bottom: 4px;
-    font-family: var(--F-mono);
-    font-size: 10px;
-}
-
-.pregame-stat.atk span { color: var(--threat-hi); }
-.pregame-stat.def span { color: var(--ally-hi); }
-
-.pregame-card-hp {
-    font-family: var(--F-mono);
-    font-size: 9px;
-    color: var(--text-dim);
-    letter-spacing: 0.5px;
-}
-
-.pregame-card-check {
-    position: absolute;
-    top: -6px;
-    left: -6px;
-    width: 24px;
-    height: 24px;
-    background: var(--side-color, var(--j-blue));
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: bold;
-    color: #000;
-    box-shadow: 0 0 12px var(--side-color, rgba(0,212,255,0.8));
-    z-index: 3;
+.pg-villain .pregame-card.selected .hcard {
+    transform: translateY(-10px) scale(1.08);
 }
 
 .pregame-footer {
@@ -231,7 +105,7 @@
     padding: 12px 40px;
     font-size: 13px;
     letter-spacing: 3px;
-    margin: 0; 
+    margin: 0;
 }
 
 .pregame-status {

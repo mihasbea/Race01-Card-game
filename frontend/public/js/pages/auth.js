@@ -11,43 +11,21 @@ function renderLoginPage(container) {
     <div style="display:flex;align-items:center;justify-content:center;height:100%;gap:56px;position:relative;z-index:1;">
 
         <div class="login-promo">
-        <div class="login-logo">
-            <div class="eyebrow">CLASSIFIED SYSTEM</div>
-            <h1>J.A.R.V.I.S<br><span>COMBAT</span></h1>
-            <div class="tagline">Tactical simulation engine</div>
-        </div>
+            <div class="login-logo">
+                <div class="eyebrow">CLASSIFIED SYSTEM</div>
+                <h1>J.A.R.V.I.S.<br><span class="combat-title">COMBAT</span></h1>
+                <div class="tagline">Tactical simulation engine</div>
+            </div>
 
-        <div style="font-family:var(--F-mono);font-size:10px;letter-spacing:0.5px;color:var(--j-blue);line-height:1.7;border-left:2px solid var(--j-blue);padding-left:14px;opacity:0.85;">
-            ▸ System initialization complete.<br>
-            ▸ Combat unit database loaded. 20 entities indexed.<br>
-            ▸ Threat simulation protocols armed.<br>
-            ▸ Awaiting Commander authentication.
-        </div>
+            <div class="jarvis-terminal">
+                <div class="jarvis-terminal-bar">
+                    <span class="jarvis-terminal-dot"></span>
+                    <span class="jarvis-terminal-label">JARVIS | SYSTEM BROADCAST</span>
+                </div>
+                <div class="jarvis-messages" id="jarvis-messages"></div>
+            </div>
 
-        <div class="login-features">
-            <div class="login-feature">
-            <div class="feat-dot blue"></div>
-            Turn-based tactical combat — heroes vs. villain threats
-            </div>
-            <div class="login-feature">
-            <div class="feat-dot gold"></div>
-            20 combat units available at launch, more to be unlocked in future updates
-            </div>
-            <div class="login-feature">
-            <div class="feat-dot ally"></div>
-            Real-time simulation duels against global operators
-            </div>
-            <div class="login-feature">
-            <div class="feat-dot blue"></div>
-            Deep combat stats and post-match analysis
-            </div>
-            <div class="login-feature">
-            <div class="feat-dot gold"></div>
-            Climb the global simulation leaderboard
-            </div>
-        </div>
-
-        <div class="login-build">JARVIS AI ENGINE · ALL SIMULATIONS CLASSIFIED</div>
+            <div class="login-build">JARVIS AI ENGINE · ALL SIMULATIONS CLASSIFIED</div>
         </div>
 
         <div class="login-card" style="position:relative;">
@@ -118,32 +96,91 @@ function renderLoginPage(container) {
     </div>
     `;
 
-    // Cache DOM references after injection
+    const JARVIS_LINES = [
+        'System initialization complete.',
+        'Combat unit database loaded — 30 entities indexed.',
+        'Threat simulation protocols armed.',
+        'Turn-based tactical engine online.',
+        'Global operator network synchronized.',
+        'Leaderboard telemetry active.',
+        'Awaiting Commander authentication.',
+    ];
+
+    const messagesEl = document.getElementById('jarvis-messages');
+    let jarvisIndex = 0;
+    let jarvisTimer = null;
+
+    function typewriterCycle(text) {
+        messagesEl.innerHTML = '';
+
+        const line = document.createElement('div');
+        line.className = 'jarvis-line';
+
+        const prefix = document.createElement('span');
+        prefix.className = 'jarvis-prefix';
+        prefix.textContent = '▸ ';
+        line.appendChild(prefix);
+
+        const textNode = document.createTextNode('');
+        line.appendChild(textNode);
+
+        const cursor = document.createElement('span');
+        cursor.className = 'jarvis-cursor';
+        line.appendChild(cursor);
+
+        messagesEl.appendChild(line);
+
+        let i = 0;
+        const TYPE_SPEED  = 32;  
+        const HOLD_TIME   = 1800; 
+        const ERASE_SPEED = 18;  
+        const PAUSE_NEXT  = 300;  
+
+        function typeNext() {
+            if (i < text.length) {
+                textNode.textContent += text[i++];
+                jarvisTimer = setTimeout(typeNext, TYPE_SPEED);
+            } else {
+                jarvisTimer = setTimeout(eraseAll, HOLD_TIME);
+            }
+        }
+
+        function eraseAll() {
+            if (textNode.textContent.length > 0) {
+                textNode.textContent = textNode.textContent.slice(0, -1);
+                jarvisTimer = setTimeout(eraseAll, ERASE_SPEED);
+            } else {
+                jarvisIndex = (jarvisIndex + 1) % JARVIS_LINES.length;
+                jarvisTimer = setTimeout(() => typewriterCycle(JARVIS_LINES[jarvisIndex]), PAUSE_NEXT);
+            }
+        }
+
+        typeNext();
+    }
+
+    typewriterCycle(JARVIS_LINES[jarvisIndex]);
+
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const loginSubmitBtn = document.getElementById('login-submit-btn');
     const regSubmitBtn = document.getElementById('reg-submit-btn');
 
-    // Error spans
     const errLoginUsername = document.getElementById('err-login-username');
     const errLoginPassword = document.getElementById('err-login-password');
     const errLoginGeneral = document.getElementById('err-login-general');
-
     const errRegUsername = document.getElementById('err-reg-username');
     const errRegEmail = document.getElementById('err-reg-email');
     const errRegPassword = document.getElementById('err-reg-password');
-    const errRegPassword2 = document.getElementById('err-reg-password2');
+    const errRegPassword2  = document.getElementById('err-reg-password2');
     const errRegGeneral = document.getElementById('err-reg-general');
 
-    // Input fields
     const loginUsername = document.getElementById('login-username');
     const loginPassword = document.getElementById('login-password');
     const regUsername = document.getElementById('reg-username');
     const regEmail = document.getElementById('reg-email');
     const regPassword = document.getElementById('reg-password');
-    const regPassword2 = document.getElementById('reg-password2');
+    const regPassword2  = document.getElementById('reg-password2');
 
-    // Helper to clear all errors
     function clearErrors(formType) {
         if (formType === 'login') {
             [errLoginUsername, errLoginPassword].forEach(el => el.textContent = '');
@@ -169,63 +206,38 @@ function renderLoginPage(container) {
         generalEl.style.display = 'block';
     }
 
-    // Tab switching logic
     function switchTab(targetFormId) {
-        // Update tabs active state
         document.querySelectorAll('.login-card-tab').forEach(tab => {
             tab.classList.toggle('active', tab.dataset.tab === targetFormId);
         });
-        // Show/hide forms
-        loginForm.style.display = targetFormId === 'login-form' ? 'block' : 'none';
+        loginForm.style.display = targetFormId === 'login-form'    ? 'block' : 'none';
         registerForm.style.display = targetFormId === 'register-form' ? 'block' : 'none';
-        // Clear errors on the hidden form
         clearErrors('login');
         clearErrors('register');
     }
 
-    // Event delegation for tab clicks and switch links
     container.addEventListener('click', (e) => {
         const tab = e.target.closest('.login-card-tab');
-        if (tab) {
-            const target = tab.dataset.tab;
-            if (target) switchTab(target);
-            return;
-        }
+        if (tab) { const t = tab.dataset.tab; if (t) switchTab(t); return; }
         const link = e.target.closest('.switch-tab-link');
-        if (link) {
-            const target = link.dataset.tab;
-            if (target) switchTab(target);
-        }
+        if (link) { const t = link.dataset.tab; if (t) switchTab(t); }
     });
 
-    // Login form submission
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         clearErrors('login');
-
         const username = loginUsername.value.trim();
         const password = loginPassword.value;
-
         let valid = true;
-        if (!username) {
-            showFieldError(errLoginUsername, loginUsername, 'Enter commander ID');
-            valid = false;
-        }
-        if (!password) {
-            showFieldError(errLoginPassword, loginPassword, 'Enter authorization code');
-            valid = false;
-        }
+        if (!username) { showFieldError(errLoginUsername, loginUsername, 'Enter commander ID'); valid = false; }
+        if (!password) { showFieldError(errLoginPassword, loginPassword, 'Enter authorization code'); valid = false; }
         if (!valid) return;
-
         loginSubmitBtn.disabled = true;
         loginSubmitBtn.textContent = 'AUTHENTICATING...';
-
         try {
             const result = await window.api.login(username, password);
             window.setToken(result.token);
             window.gameState.username = result.username || username;
-
-            // Redirect to lobby (main menu)
             window.appRouter.navigate('lobby');
         } catch (err) {
             showGeneralError('login', err.message || 'Authentication failed. Please try again.');
@@ -234,45 +246,25 @@ function renderLoginPage(container) {
         }
     });
 
-    // Register form submission
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         clearErrors('register');
-
         const username = regUsername.value.trim();
-        const email = regEmail.value.trim();
+        const email    = regEmail.value.trim();
         const password = regPassword.value;
-        const password2 = regPassword2.value;
-
+        const password2= regPassword2.value;
         let valid = true;
-
-        if (!username) {
-            showFieldError(errRegUsername, regUsername, 'Choose a commander designation');
-            valid = false;
-        }
-        if (!email || !email.includes('@')) {
-            showFieldError(errRegEmail, regEmail, 'Enter a valid secure channel address');
-            valid = false;
-        }
-        if (!password || password.length < 8) {
-            showFieldError(errRegPassword, regPassword, 'Authorization code must be at least 8 characters');
-            valid = false;
-        }
-        if (password !== password2) {
-            showFieldError(errRegPassword2, regPassword2, 'Codes do not match');
-            valid = false;
-        }
+        if (!username) { showFieldError(errRegUsername, regUsername, 'Choose a commander designation'); valid = false; }
+        if (!email || !email.includes('@')) { showFieldError(errRegEmail, regEmail, 'Enter a valid secure channel address'); valid = false; }
+        if (!password || password.length < 8) { showFieldError(errRegPassword, regPassword, 'Authorization code must be at least 8 characters'); valid = false; }
+        if (password !== password2) { showFieldError(errRegPassword2, regPassword2, 'Codes do not match'); valid = false; }
         if (!valid) return;
-
         regSubmitBtn.disabled = true;
         regSubmitBtn.textContent = 'ENLISTING...';
-
         try {
             const result = await window.api.register(username, email, password);
-            // Auto login after registration (token already returned)
             window.setToken(result.token);
             window.gameState.username = result.username || username;
-
             window.appRouter.navigate('lobby');
         } catch (err) {
             showGeneralError('register', err.message || 'Registration failed. Please try again.');
@@ -282,5 +274,4 @@ function renderLoginPage(container) {
     });
 }
 
-// Register route
 window.appRouter.register('login', renderLoginPage);
