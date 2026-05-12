@@ -30,14 +30,22 @@ class UserRepository {
     async save(user) {
         try {
             const [result] = await pool.query(
-                'INSERT INTO users (full_name, login, email, password, coins, wins, lost, winrate, lvl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [user.fullName, user.login, user.email, user.password, user.coins, user.wins, user.lost, user.winrate, user.lvl]
+                'INSERT INTO users (full_name, username, email, password, coins, wins, lost, winrate, lvl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [user.fullName, user.username, user.email, user.password, user.coins, user.wins, user.lost, user.winrate, user.lvl]
             );
             return result.insertId;
         } catch (error) {
             console.error('[UserRepository.save] Error saving user:', error.message);
             throw error;
         }
+    }
+
+    async create({ username, email, password }) {
+        const [result] = await pool.query(
+            'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+            [username, email, password]
+        );
+        return result.insertId;
     }
 
     /**

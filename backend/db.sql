@@ -3,15 +3,16 @@ USE card_game;
 
 CREATE TABLE if NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(100) NOT NULL,
-    login VARCHAR(50) NOT NULL UNIQUE,
+    full_name VARCHAR(100),
+    username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     coins INT DEFAULT 0,
     wins INT DEFAULT 0,
     lost INT DEFAULT 0,
     winrate DECIMAL(5, 2) DEFAULT 0.00,
-    lvl INT DEFAULT 1
+    lvl INT DEFAULT 1,
+    avatar MEDIUMBLOB
 );
 
 CREATE TABLE if NOT EXISTS battles (

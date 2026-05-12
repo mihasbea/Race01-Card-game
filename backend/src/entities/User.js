@@ -1,7 +1,7 @@
 class User {
     #id;
     #fullName;
-    #login;
+    #username;
     #email;
     #password;
     #coins;
@@ -13,10 +13,10 @@ class User {
     /**
      * @param {Object} data - User data object from DB or form
      */
-    constructor({ id, full_name, login, email, password, coins = 0, wins = 0, lost = 0, lvl = 1 }) {
+    constructor({ id, full_name = null, username, email, password, coins = 0, wins = 0, lost = 0, lvl = 1 }) {
         this.#id = id;
         this.#fullName = full_name;
-        this.#login = login;
+        this.#username = username;
         this.#email = email;
         this.#password = password;
         this.#coins = Number(coins);
@@ -37,7 +37,7 @@ class User {
     // GETTERS
     get id() { return this.#id; }
     get fullName() { return this.#fullName; }
-    get login() { return this.#login; }
+    get username() { return this.#username; }
     get email() { return this.#email; }
     get password() { return this.#password; }
     get coins() { return this.#coins; }
@@ -64,7 +64,7 @@ class User {
         return {
             id: this.#id,
             fullName: this.#fullName,
-            login: this.#login,
+            username: this.#username,
             email: this.#email,
             coins: this.#coins,
             wins: this.#wins,
