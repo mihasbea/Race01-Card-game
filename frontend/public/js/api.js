@@ -60,20 +60,13 @@ async function apiGetProfile() {
 }
 
 async function apiGetRecentMatches() {
-    return [
-        { result: 'win', opponent: 'Villain42', opponentClearance: 'Gold', unitsDeployed: 3, turns: 12, timeAgo: 'Today, 14:32' },
-        { result: 'loss', opponent: 'MagnetoMax', opponentClearance: 'Platinum', unitsDeployed: 5, turns: 20, timeAgo: 'Yesterday, 19:10' },
-        // ...
-    ];
-
-    //return _request('GET', '/matches/recent');
+    return _request('GET', '/matches/recent');
 }
 window.apiGetRecentMatches = apiGetRecentMatches;
 
 async function apiGetLeaderboard() {
     return _request('GET', '/leaderboard');
 }
-
 window.apiGetLeaderboard = apiGetLeaderboard;
 
 window.apiGetLeaderboard = apiGetLeaderboard;
