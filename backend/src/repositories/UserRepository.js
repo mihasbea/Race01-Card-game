@@ -11,7 +11,7 @@ class UserRepository {
     async findOne(column, value) {
         try {
             const [rows] = await pool.query(
-                `SELECT * FROM users WHERE ${column} = ? LIMIT 1`,
+                `SELECT * FROM card_game.users WHERE ${column} = ? LIMIT 1`,
                 [value]
             );
 
@@ -30,7 +30,7 @@ class UserRepository {
     async save(user) {
         try {
             const [result] = await pool.query(
-                `INSERT INTO users (username, email, password, coins, wins, lost, winrate) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO card_game.users (username, email, password, coins, wins, lost, winrate) VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 [user.username, user.email, user.password, user.coins, user.wins, user.lost, user.winrate]
             );
             return result.insertId;
@@ -42,7 +42,7 @@ class UserRepository {
 
     async create({ username, email, password }) {
         const [result] = await pool.query(
-            `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`,
+            `INSERT INTO card_game.users (username, email, password) VALUES (?, ?, ?)`,
             [username, email, password]
         );
         return result.insertId;
@@ -55,7 +55,7 @@ class UserRepository {
     async getLeaderboard(number) {
         try {
             const [rows] = await pool.query(
-                `SELECT id, username, wins, lost, winrate FROM users ORDER BY wins DESC LIMIT ?`,
+                `SELECT id, username, wins, lost, winrate FROM card_game.users ORDER BY wins DESC LIMIT ?`,
                 [number]
             );
             return rows;
@@ -76,7 +76,7 @@ class UserRepository {
         if (keys.length === 0) return;
 
         try {
-            const query = `UPDATE users SET ${keys.map(key => `${key} = ?`).join(', ')} WHERE id = ?`;
+            const query = `UPDATE card_game.users SET ${keys.map(key => `${key} = ?`).join(', ')} WHERE id = ?`;
             const values = [...Object.values(updates), userId];
             
             const [result] = await pool.query(query, values);

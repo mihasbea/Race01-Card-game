@@ -42,9 +42,9 @@ class BattleRepository {
                     u1.username AS user1Username, 
                     u2.username AS user2Username,
                     CASE WHEN b.winner_id = ? THEN 'win' ELSE 'loss' END as result
-                FROM battles b
-                JOIN users u1 ON b.user1_id = u1.id
-                JOIN users u2 ON b.user2_id = u2.id
+                FROM card_game.battles b
+                JOIN card_game.users u1 ON b.user1_id = u1.id
+                JOIN card_game.users u2 ON b.user2_id = u2.id
                 WHERE b.user1_id = ? OR b.user2_id = ? 
                 ORDER BY b.battle_time DESC 
                 LIMIT ?`,
@@ -65,7 +65,7 @@ class BattleRepository {
     async findById(battleId) {
         try {
             const [rows] = await pool.query(
-                'SELECT * FROM battles WHERE id = ? LIMIT 1',
+                'SELECT * FROM card_game.battles WHERE id = ? LIMIT 1',
                 [battleId]
             );
             return rows[0] ? new Battle(rows[0]) : null;
@@ -81,7 +81,7 @@ class BattleRepository {
      */
     async getTotalUnitsDeployed() {
         try {
-            const [rows] = await pool.query('SELECT SUM(units_deployed) as total FROM battles');
+            const [rows] = await pool.query('SELECT SUM(units_deployed) as total FROM card_game.battles');
             return rows[0].total || 0;
         } catch (error) {
             console.error('[BattleRepository.getTotalUnitsDeployed] Error:', error.message);
