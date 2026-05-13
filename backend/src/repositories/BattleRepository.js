@@ -10,7 +10,7 @@ class BattleRepository {
     async save(battle) {
         try {
             const [result] = await pool.query(
-                `INSERT INTO battles 
+                `INSERT INTO card_game.battles 
                 (battle_time, units_deployed, turns, user1_id, user2_id, winner_id) 
                 VALUES (?, ?, ?, ?, ?, ?)`,
                 [
