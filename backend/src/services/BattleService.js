@@ -7,15 +7,17 @@ class BattleService {
         try {
             const battles = await BattleRepository.getRecentMatches(userId, limit);
 
-            let formattedBattles = battles.map(battle => ({
-                result: battle.result === 'win' ? 'win' : 'loss',
-                opponent: battle.user1Id === userId ? battle.user2Username : battle.user1Username,
-                unitsDeployed: battle.unitsDeployed,
-                turns: battle.turns,
-                battleAgo: battle.battleTime
-            }));
-
-            return formattedBattles;
+            return battles.map(battle => {
+                const isUser1 = Number(battle.user1_id) === Number(userId);
+                
+                return {
+                    result: battle.result,
+                    opponent: isUser1 ? battle.user2Username : battle.user1Username,
+                    unitsDeployed: battle.units_deployed,
+                    turns: battle.turns,
+                    timeAgo: battle.battle_time
+                };
+            });
         }
         catch (err) {
             console.error('Error in BattleService.getRecentMatches:', err);

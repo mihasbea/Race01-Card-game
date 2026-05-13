@@ -30,35 +30,14 @@ class BattleRepository {
     }
 
     /**
-     * Retrieves the battle history for a specific user.
+     * Retrieves recent matches with opponent usernames and win/loss results.
      * @param {number} userId - The ID of the user.
-     * @param {number} limit - Max number of records to return.
-     * @returns {Promise<Array<Battle>>}
+     * @param {number} limit - Max records to return.
      */
-    async getHistoryByUserId(userId, limit = 10) {
-        try {
-            const [rows] = await pool.query(
-                `USE card_game;
-                 SELECT * FROM battles 
-                 WHERE user1_id = ? OR user2_id = ? 
-                 ORDER BY battle_time DESC 
-                 LIMIT ?`,
-                [userId, userId, limit]
-            );
-            
-            // Map the raw database rows to Battle entity objects
-            return rows.map(row => new Battle(row));
-        } catch (error) {
-            console.error(`[BattleRepository.getHistoryByUserId] Error for user ${userId}:`, error.message);
-            throw error;
-        }
-    }
-
     async getRecentMatches(userId, limit = 10) {
         try {
             const [rows] = await pool.query(
-                `USE card_game;
-                 SELECT 
+                `SELECT 
                     b.*, 
                     u1.username AS user1Username, 
                     u2.username AS user2Username,
