@@ -312,6 +312,7 @@ function _setActionState(isMyTurn) {
 function _attachSocketListeners() {
     window.appSocket.off('gameStateUpdate');
     window.appSocket.off('gameOver');
+    window.appSocket.off('opponentAttack');
 
     window.appSocket.on('gameStateUpdate', ({ game }) => {
         window.gameState.game = game;
@@ -322,6 +323,10 @@ function _attachSocketListeners() {
         _clearTimer();
         if (_jarvisInterval) { clearInterval(_jarvisInterval); _jarvisInterval = null; }
         _showGameOver(winner === 'you');
+    });
+
+    window.appSocket.on('opponentAttack', ({ attackerSlot, targetSlot, attackerName }) => {
+        _animateOpponentAttack(attackerSlot, targetSlot, attackerName);
     });
 
     _attachClickHandlers();
@@ -631,6 +636,208 @@ function _reattachClickHandlers() {
         });
     }
 }
+
+function _animateOpponentAttack(attackerSlot, targetSlot, attackerName) {
+    const attackerEl = document.querySelector(
+        `#board-opponent [data-slot="${attackerSlot}"].threat-card`
+    );
+
+    const targetEl = targetSlot !== -1
+        ? document.querySelector(`#board-player [data-slot="${targetSlot}"].cmd-card`)
+        : document.getElementById('avatar-cmd');
+
+    if (!attackerEl || !targetEl) return;
+
+    attackerEl.classList.add('opp-attacking');
+    _setHint(`<span style="color:#ff4040;">⚠ ${attackerName || 'Enemy unit'}</span> is attacking!`);
+
+    const attackerRect = attackerEl.getBoundingClientRect();
+    const targetRect   = targetEl.getBoundingClientRect();
+
+    const startX = attackerRect.left + attackerRect.width / 2;
+    const startY = attackerRect.top + attackerRect.height / 2;
+    const endX   = targetRect.left + targetRect.width / 2;
+    const endY   = targetRect.top + targetRect.height / 2;
+
+    const comet = document.createElement('div');
+    comet.className = 'attack-comet';
+
+    const head = document.createElement('div');
+    head.className = 'attack-comet-head';
+
+    const tail = document.createElement('div');
+    tail.className = 'attack-comet-tail';
+
+    const segments = ['seg-1', 'seg-2', 'seg-3', 'seg-4'].map(cls => {
+        const el = document.createElement('div');
+        el.className = `comet-segment ${cls}`;
+        tail.appendChild(el);
+        return el;
+    });
+
+    comet.appendChild(tail);
+    comet.appendChild(head);
+    document.body.appendChild(comet);
+
+    const duration = 1100;
+    const started = performance.now();
+    const history = [];
+    const historyMax = 18;
+
+    function easeInOutCubic(t) {
+        return t < 0.5
+            ? 4 * t * t * t
+            : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function spawnExplosion(x, y) {
+        const explosion = document.createElement('div');
+        explosion.className = 'attack-explosion';
+        explosion.style.left = `${x}px`;
+        explosion.style.top  = `${y}px`;
+
+        const core = document.createElement('div');
+        core.className = 'attack-explosion-core';
+
+        const ring = document.createElement('div');
+        ring.className = 'attack-explosion-ring';
+
+        const glow = document.createElement('div');
+        glow.className = 'attack-explosion-glow';
+
+        explosion.appendChild(glow);
+        explosion.appendChild(ring);
+        explosion.appendChild(core);
+
+        const count = 10;
+        for (let i = 0; i < count; i++) {
+            const p = document.createElement('div');
+            p.className = 'attack-particle';
+
+            const angle = (Math.PI * 2 * i) / count + (Math.random() * 0.35);
+            const dist = 28 + Math.random() * 30;
+            const dx = Math.cos(angle) * dist;
+            const dy = Math.sin(angle) * dist;
+
+            p.style.setProperty('--dx', `${dx}px`);
+            p.style.setProperty('--dy', `${dy}px`);
+            p.style.left = '0px';
+            p.style.top = '0px';
+            p.style.transform = 'translate(-50%, -50%)';
+
+            p.animate(
+                [
+                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                    { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.25)`, opacity: 0 }
+                ],
+                { duration: 560, easing: 'cubic-bezier(0.15, 0.85, 0.2, 1)', fill: 'forwards' }
+            );
+
+            explosion.appendChild(p);
+        }
+
+        document.body.appendChild(explosion);
+        targetEl.classList.add('attack-hit-flash');
+
+        setTimeout(() => {
+            explosion.remove();
+            targetEl.classList.remove('attack-hit-flash');
+        }, 650);
+    }
+
+    function step(now) {
+        const t = Math.min((now - started) / duration, 1);
+        const eased = easeInOutCubic(t);
+
+        const x = startX + (endX - startX) * eased;
+        const y = startY + (endY - startY) * eased;
+
+        history.unshift({ x, y });
+        if (history.length > historyMax) history.pop();
+
+        comet.style.left = `${x}px`;
+        comet.style.top  = `${y}px`;
+
+        const velocityX = history.length > 1 ? history[0].x - history[1].x : endX - startX;
+        const velocityY = history.length > 1 ? history[0].y - history[1].y : endY - startY;
+        const angle = Math.atan2(velocityY, velocityX) * 180 / Math.PI;
+        const tailAngle = angle + 180;
+
+        const tailSources = history.slice(2, 6);
+        segments.forEach((seg, i) => {
+            const src = tailSources[i] || history[history.length - 1] || { x, y };
+            const fade = 1 - i * 0.2;
+            const dx = src.x - x;
+            const dy = src.y - y;
+
+            seg.style.left = `${dx}px`;
+            seg.style.top  = `${dy}px`;
+            seg.style.opacity = String(Math.max(0, fade));
+            seg.style.transform = `translate(-50%, -50%) rotate(${tailAngle}deg) scale(${1 - i * 0.12})`;
+        });
+
+        if (t < 1) {
+            requestAnimationFrame(step);
+        } else {
+            spawnExplosion(endX, endY);
+            comet.remove();
+            setTimeout(() => attackerEl.classList.remove('opp-attacking'), 120);
+        }
+    }
+
+    requestAnimationFrame(step);
+}
+
+function _shootProjectile(fromEl, toEl) {
+    const fromR = fromEl.getBoundingClientRect();
+    const toR = toEl.getBoundingClientRect();
+
+    const x1 = fromR.left + fromR.width  / 2;
+    const y1 = fromR.top  + fromR.height / 2;
+    const x2 = toR.left   + toR.width    / 2;
+    const y2 = toR.top    + toR.height   / 2;
+
+    // SVG beam line
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.style.cssText = `
+        position:fixed; inset:0; width:100%; height:100%;
+        pointer-events:none; z-index:99; overflow:visible;
+    `;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x1); line.setAttribute('y2', y1);
+    line.setAttribute('stroke', '#e03020');
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('stroke-linecap', 'round');
+    line.style.filter = 'drop-shadow(0 0 6px #ff4020)';
+    svg.appendChild(line);
+    document.body.appendChild(svg);
+
+    // Animate line extending toward target
+    const start = performance.now();
+    const dur   = 350;
+    function step(now) {
+        const t = Math.min((now - start) / dur, 1);
+        const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+        line.setAttribute('x2', x1 + (x2 - x1) * ease);
+        line.setAttribute('y2', y1 + (y2 - y1) * ease);
+        if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+
+    // Impact spark
+    setTimeout(() => {
+        svg.remove();
+        const spark = document.createElement('div');
+        spark.className = 'attack-spark';
+        spark.style.cssText = `left:${x2}px; top:${y2}px;`;
+        spark.textContent = '💥';
+        document.body.appendChild(spark);
+        setTimeout(() => spark.remove(), 500);
+    }, dur + 20);
+}
+
+// ── Game over ────────────────────────────────────────────────────────────────
 
 function _showGameOver(isWin) {
     const oldOverlay = document.querySelector('.gameover-overlay');

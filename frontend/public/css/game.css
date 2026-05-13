@@ -815,3 +815,264 @@
 .art-whiplash   { background: linear-gradient(155deg, #100808 0%, #280808 40%, #502010 70%, #a87810 100%); }
 .art-ronan      { background: linear-gradient(155deg, #080010 0%, #180028 40%, #380050 70%, #6040a0 100%); }
 .art-goblin     { background: linear-gradient(155deg, #081408 0%, #143010 40%, #286820 70%, #a87010 100%); }
+
+.attack-comet {
+    position: fixed;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    z-index: 9999;
+    width: 0;
+    height: 0;
+    will-change: left, top, transform, opacity;
+}
+
+.attack-comet-head {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background:
+        radial-gradient(circle at center,
+            rgba(255,255,255,1) 0%,
+            rgba(255,235,235,0.98) 16%,
+            rgba(255,90,90,0.96) 40%,
+            rgba(200,0,0,0.82) 68%,
+            rgba(120,0,0,0) 100%);
+    box-shadow:
+        0 0 10px rgba(255, 80, 80, 0.95),
+        0 0 24px rgba(255, 0, 0, 0.75),
+        0 0 52px rgba(255, 0, 0, 0.42);
+    animation: cometHeadPulse 0.14s ease-in-out infinite alternate;
+}
+
+.attack-comet-head::before {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,0,0,0.25) 0%, rgba(255,0,0,0) 72%);
+    filter: blur(8px);
+}
+
+@keyframes cometHeadPulse {
+    from { transform: translate(-50%, -50%) scale(0.92); }
+    to   { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.attack-comet-tail {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+}
+
+.comet-segment {
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 999px;
+    transform: translate(-50%, -50%);
+    filter: blur(1px);
+    will-change: left, top, transform, opacity;
+    mix-blend-mode: screen;
+}
+
+.comet-segment.seg-1 {
+    width: 28px;
+    height: 10px;
+    background: radial-gradient(circle at center,
+        rgba(255,220,220,0.85) 0%,
+        rgba(255,90,90,0.65) 45%,
+        rgba(255,0,0,0) 100%);
+    box-shadow: 0 0 14px rgba(255, 0, 0, 0.35);
+}
+
+.comet-segment.seg-2 {
+    width: 36px;
+    height: 12px;
+    background: radial-gradient(circle at center,
+        rgba(255,160,160,0.55) 0%,
+        rgba(255,60,60,0.4) 45%,
+        rgba(255,0,0,0) 100%);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.22);
+}
+
+.comet-segment.seg-3 {
+    width: 44px;
+    height: 14px;
+    background: radial-gradient(circle at center,
+        rgba(255,120,120,0.38) 0%,
+        rgba(255,40,40,0.22) 45%,
+        rgba(255,0,0,0) 100%);
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.15);
+}
+
+.comet-segment.seg-4 {
+    width: 54px;
+    height: 16px;
+    background: radial-gradient(circle at center,
+        rgba(255,100,100,0.22) 0%,
+        rgba(255,30,30,0.12) 45%,
+        rgba(255,0,0,0) 100%);
+    box-shadow: 0 0 6px rgba(255, 0, 0, 0.1);
+}
+
+.attack-impact {
+    animation: targetImpact 0.35s ease;
+}
+
+@keyframes targetImpact {
+    0%   { transform: scale(1); filter: brightness(1); }
+    30%  { transform: scale(1.05); filter: brightness(1.8); }
+    60%  { transform: scale(0.98); filter: brightness(1.2); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+.bcard.opp-attacking .bcard-inner {
+    border-color: #ff3b30 !important;
+    box-shadow:
+        0 0 0 1px rgba(255, 90, 60, 0.75),
+        0 0 16px rgba(255, 0, 0, 0.55),
+        0 0 34px rgba(255, 0, 0, 0.28) !important;
+    animation: opp-charge 0.18s ease-in-out infinite alternate;
+    transform: translateY(-2px) scale(1.02);
+    filter: saturate(1.25) brightness(1.12);
+}
+
+@keyframes opp-charge {
+    from {
+        box-shadow:
+            0 0 0 1px rgba(255, 80, 60, 0.65),
+            0 0 12px rgba(255, 0, 0, 0.42),
+            0 0 24px rgba(255, 0, 0, 0.22) !important;
+        transform: translateY(-1px) scale(1.01);
+        filter: saturate(1.15) brightness(1.05);
+    }
+    to {
+        box-shadow:
+            0 0 0 1px rgba(255, 120, 100, 0.95),
+            0 0 22px rgba(255, 0, 0, 0.7),
+            0 0 46px rgba(255, 0, 0, 0.38) !important;
+        transform: translateY(-3px) scale(1.04);
+        filter: saturate(1.45) brightness(1.22);
+    }
+}
+
+.attack-explosion {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    z-index: 10000;
+    transform: translate(-50%, -50%);
+}
+
+.attack-explosion-core {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle,
+        rgba(255,255,255,1) 0%,
+        rgba(255,220,220,0.98) 18%,
+        rgba(255,80,80,0.95) 40%,
+        rgba(220,0,0,0.7) 62%,
+        rgba(220,0,0,0) 100%);
+    box-shadow:
+        0 0 14px rgba(255, 70, 70, 0.95),
+        0 0 32px rgba(255, 0, 0, 0.75),
+        0 0 66px rgba(255, 0, 0, 0.42);
+    animation: explosionCore 0.34s ease-out both;
+}
+
+.attack-explosion-ring {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid rgba(255, 80, 80, 0.95);
+    box-shadow: 0 0 18px rgba(255, 0, 0, 0.35);
+    animation: explosionRing 0.48s ease-out both;
+}
+
+.attack-explosion-glow {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle,
+        rgba(255,60,60,0.36) 0%,
+        rgba(255,0,0,0.16) 35%,
+        rgba(255,0,0,0) 72%);
+    filter: blur(6px);
+    animation: explosionGlow 0.42s ease-out both;
+}
+
+.attack-particle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle,
+        rgba(255,255,255,1) 0%,
+        rgba(255,150,150,0.95) 35%,
+        rgba(255,40,40,0.9) 60%,
+        rgba(255,0,0,0) 100%);
+    box-shadow:
+        0 0 10px rgba(255, 0, 0, 0.55),
+        0 0 18px rgba(255, 0, 0, 0.25);
+    animation: particleFly 0.55s ease-out both;
+}
+
+@keyframes explosionCore {
+    0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+    20%  { transform: translate(-50%, -50%) scale(1.25); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2.1); opacity: 0; }
+}
+
+@keyframes explosionRing {
+    0%   { transform: translate(-50%, -50%) scale(0.25); opacity: 0; }
+    15%  { opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(3.9); opacity: 0; }
+}
+
+@keyframes explosionGlow {
+    0%   { transform: translate(-50%, -50%) scale(0.35); opacity: 0; }
+    18%  { opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2.7); opacity: 0; }
+}
+
+@keyframes particleFly {
+    0%   { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+    70%  { opacity: 0.9; }
+    100% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+}
+
+.attack-hit-flash {
+    animation: attackHitFlash 0.32s ease;
+}
+
+@keyframes attackHitFlash {
+    0%   { transform: scale(1); filter: brightness(1); }
+    30%  { transform: scale(1.05); filter: brightness(2); }
+    100% { transform: scale(1); filter: brightness(1); }
+}

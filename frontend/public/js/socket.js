@@ -142,17 +142,32 @@ const mockSocket = (() => {
             if (oppAttackerIdx !== -1) {
                 const oppAttacker = state.opponent.field[oppAttackerIdx];
                 const yourCardIdx = state.you.field.findIndex(Boolean);
-                if (yourCardIdx !== -1) {
-                    _resolveAttack(oppAttacker, state.you.field, yourCardIdx, state.you);
-                } else {
-                    state.you.hp -= oppAttacker.atk;
-                }
-            }
 
-            if (!_checkGameOver(state)) {
-                state.currentTurn = 'you';
-                state.turnTimeLeft = 30;
-                _trigger('gameStateUpdate', { game: state });
+                // Fire animation event first, then resolve after delay
+                _trigger('opponentAttack', {
+                    attackerSlot: oppAttackerIdx,
+                    targetSlot:   yourCardIdx,   // -1 = direct attack on avatar
+                    attackerName: oppAttacker.name,
+                });
+
+                setTimeout(() => {
+                    if (yourCardIdx !== -1) {
+                        _resolveAttack(oppAttacker, state.you.field, yourCardIdx, state.you);
+                    } else {
+                        state.you.hp -= oppAttacker.atk;
+                    }
+                    if (!_checkGameOver(state)) {
+                        state.currentTurn = 'you';
+                        state.turnTimeLeft = 30;
+                        _trigger('gameStateUpdate', { game: state });
+                    }
+                }, 950);
+            } else {
+                if (!_checkGameOver(state)) {
+                    state.currentTurn = 'you';
+                    state.turnTimeLeft = 30;
+                    _trigger('gameStateUpdate', { game: state });
+                }
             }
         }, 2000);
     }
