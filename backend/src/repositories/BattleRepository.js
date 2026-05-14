@@ -10,7 +10,7 @@ class BattleRepository {
     async save(battle) {
         try {
             const [result] = await pool.query(
-                `INSERT INTO battles 
+                `INSERT INTO card_game.battles 
                 (battle_time, units_deployed, turns, user1_id, user2_id, winner_id) 
                 VALUES (?, ?, ?, ?, ?, ?)`,
                 [
@@ -30,25 +30,29 @@ class BattleRepository {
     }
 
     /**
-     * Retrieves the battle history for a specific user.
+     * Retrieves recent matches with opponent usernames and win/loss results.
      * @param {number} userId - The ID of the user.
-     * @param {number} limit - Max number of records to return.
-     * @returns {Promise<Array<Battle>>}
+     * @param {number} limit - Max records to return.
      */
-    async getHistoryByUserId(userId, limit = 20) {
+    async getRecentMatches(userId, limit = 10) {
         try {
             const [rows] = await pool.query(
-                `SELECT * FROM battles 
-                 WHERE user1_id = ? OR user2_id = ? 
-                 ORDER BY battle_time DESC 
-                 LIMIT ?`,
-                [userId, userId, limit]
+                `SELECT 
+                    b.*, 
+                    u1.username AS user1Username, 
+                    u2.username AS user2Username,
+                    CASE WHEN b.winner_id = ? THEN 'win' ELSE 'loss' END as result
+                FROM card_game.battles b
+                JOIN card_game.users u1 ON b.user1_id = u1.id
+                JOIN card_game.users u2 ON b.user2_id = u2.id
+                WHERE b.user1_id = ? OR b.user2_id = ? 
+                ORDER BY b.battle_time DESC 
+                LIMIT ?`,
+                [userId, userId, userId, limit]
             );
-            
-            // Map the raw database rows to Battle entity objects
-            return rows.map(row => new Battle(row));
+            return rows;
         } catch (error) {
-            console.error(`[BattleRepository.getHistoryByUserId] Error for user ${userId}:`, error.message);
+            console.error('[BattleRepository.getRecentMatches] Error:', error.message);
             throw error;
         }
     }
@@ -61,7 +65,7 @@ class BattleRepository {
     async findById(battleId) {
         try {
             const [rows] = await pool.query(
-                'SELECT * FROM battles WHERE id = ? LIMIT 1',
+                'SELECT * FROM card_game.battles WHERE id = ? LIMIT 1',
                 [battleId]
             );
             return rows[0] ? new Battle(rows[0]) : null;
@@ -77,7 +81,7 @@ class BattleRepository {
      */
     async getTotalUnitsDeployed() {
         try {
-            const [rows] = await pool.query('SELECT SUM(units_deployed) as total FROM battles');
+            const [rows] = await pool.query('SELECT SUM(units_deployed) as total FROM card_game.battles');
             return rows[0].total || 0;
         } catch (error) {
             console.error('[BattleRepository.getTotalUnitsDeployed] Error:', error.message);
