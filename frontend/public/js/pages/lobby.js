@@ -174,7 +174,7 @@ function renderMenuPage(container) {
     });
 
     document.getElementById('btn-config').addEventListener('click', () => {
-        console.log('System Config not yet available.');
+        window.appRouter.navigate('config');
     });
 
     document.getElementById('btn-logout').addEventListener('click', () => {
