@@ -145,7 +145,7 @@ function renderMenuPage(container) {
 
         window.appSocket.emit('joinQueue', {
             userId: window.gameState.userId,
-            token:  window.gameState.token,
+            username: window.gameState.username
         });
     }
 
