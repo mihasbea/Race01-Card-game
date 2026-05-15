@@ -243,7 +243,11 @@ function renderMenuPage(container) {
         const c = document.getElementById('recent-matches-list');
         if (!c) return;
         if (!matches.length) {
-            c.innerHTML = '<div class="match-row" style="justify-content:center;opacity:0.6;">No recent simulations</div>';
+            c.innerHTML = `
+                <div class="no-simulations-msg">
+                    <div class="no-sim-title">No Combat Record Found</div>
+                    <div class="no-sim-sub">Deploy your first simulation to begin your operational history, Commander.</div>
+                </div>`;
             return;
         }
         c.innerHTML = matches.map(m => {
