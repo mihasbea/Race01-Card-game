@@ -62,6 +62,10 @@ class UserService {
     async getLeaderboard(number = 10) {
         return await UserRepository.getLeaderboard(number);
     }
+
+    async updateUser(id, updateData) {
+        return await UserRepository.update(id, updateData);
+    }
 }
 
 module.exports = new UserService();

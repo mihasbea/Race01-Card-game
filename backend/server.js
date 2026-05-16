@@ -354,6 +354,8 @@ async function startServer() {
             const card = player.hand.splice(cardIdx, 1)[0];
             player.field[slotIndex] = card;
 
+            player.unitsDeployedCount++;
+
             if (await _checkGameOver(game)) return;
 
             _switchTurn(game);
@@ -436,7 +438,7 @@ async function startServer() {
                 p2Id: game.p2.userId,
                 winnerId: wPlayer.userId,
                 turns: game.turnNumber,
-                unitsDeployed: (game.p1.usedIds?.length || 0) + (game.p2.usedIds?.length || 0)
+                unitsDeployed: game.p1.unitsDeployed + game.p2.unitsDeployed
             });
             
             games.delete(game.roomId);
@@ -533,7 +535,8 @@ async function startServer() {
                 hand: p1Hand,
                 field: p1Field,
                 reserveCard: null,
-                usedIds: p1.usedIds
+                usedIds: p1.usedIds,
+                unitsDeployedCount: 3
             },
             p2: {
                 socket: p2.socket,
@@ -544,7 +547,8 @@ async function startServer() {
                 hand: p2Hand,
                 field: p2Field,
                 reserveCard: null,
-                usedIds: p2.usedIds
+                usedIds: p2.usedIds,
+                unitsDeployedCount: 3
             }
         };
 
