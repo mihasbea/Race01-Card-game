@@ -335,6 +335,8 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    width: 120px;
+    flex-shrink: 0;
 }
 
 .vs-avatar-you,
@@ -367,6 +369,7 @@
     border-radius: 50%;
     border: 1.5px dashed rgba(0,212,255,0.2);
     animation: spinSlow 8s linear infinite;
+    pointer-events: none;
 }
 
 @keyframes spinSlow { to { transform: rotate(360deg); } }
@@ -388,6 +391,9 @@
 
 .vs-opp-name.searching-dots::after {
     content: '';
+    display: inline-block;
+    width: 18px;
+    text-align: left;
     animation: dots 1.4s steps(4, end) infinite;
 }
 
@@ -495,157 +501,4 @@
     text-align: center;
     line-height: 1.7;
     max-width: 340px;
-}
-
-/* ── Terminate Session Confirmation ──────────────────────────────────────── */
-
-#confirm-logout {
-    position: fixed;
-    inset: 0;
-    background: rgba(2,10,19,0.92);
-    backdrop-filter: blur(14px);
-    z-index: 200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.25s ease, visibility 0.25s ease;
-}
-
-#confirm-logout.active {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-}
-
-.confirm-panel {
-    position: relative;
-    width: 420px;
-    background: var(--bg-2);
-    border: 1px solid var(--border-2);
-    border-top: 2px solid var(--threat-hi);
-    padding: 36px 32px 28px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
-    animation: confirmAppear 0.22s ease both;
-}
-
-@keyframes confirmAppear {
-    from { opacity: 0; transform: scale(0.96) translateY(8px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* corner brackets */
-.confirm-panel::before,
-.confirm-panel::after {
-    content: '';
-    position: absolute;
-    width: 12px; height: 12px;
-    border-color: var(--threat-hi);
-    border-style: solid;
-    opacity: 0.7;
-}
-.confirm-panel::before { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
-.confirm-panel::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
-
-.confirm-corner-tr {
-    position: absolute;
-    top: -1px; right: -1px;
-    width: 12px; height: 12px;
-    border-top: 2px solid var(--threat-hi);
-    border-right: 2px solid var(--threat-hi);
-    opacity: 0.7;
-}
-
-.confirm-tag {
-    font-family: var(--F-mono);
-    font-size: 9px;
-    letter-spacing: 4px;
-    color: var(--threat-hi);
-    opacity: 0.6;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-}
-
-.confirm-icon {
-    font-size: 36px;
-    line-height: 1;
-    margin-bottom: 18px;
-    filter: drop-shadow(0 0 12px rgba(217,48,63,0.5));
-}
-
-.confirm-title {
-    font-family: var(--F-display);
-    font-size: 28px;
-    letter-spacing: 5px;
-    color: var(--threat-hi);
-    text-align: center;
-    margin-bottom: 10px;
-    text-shadow: 0 0 20px rgba(217,48,63,0.35);
-}
-
-.confirm-sub {
-    font-family: var(--F-mono);
-    font-size: 11px;
-    letter-spacing: 0.6px;
-    color: var(--text-dim);
-    text-align: center;
-    line-height: 1.7;
-    max-width: 300px;
-    margin-bottom: 32px;
-}
-
-.confirm-sub em {
-    color: var(--text-mid);
-    font-style: normal;
-}
-
-.confirm-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    width: 100%;
-}
-
-.confirm-btn-abort {
-    background: transparent;
-    border: 1px solid var(--border-2);
-    color: var(--text-dim);
-    font-family: var(--F-mono);
-    font-size: 10px;
-    letter-spacing: 2.5px;
-    padding: 12px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all var(--trans);
-}
-
-.confirm-btn-abort:hover {
-    border-color: var(--j-blue);
-    color: var(--j-blue);
-    background: var(--j-blue-lo);
-}
-
-.confirm-btn-confirm {
-    background: linear-gradient(135deg, #5a0a10, #7a1018);
-    border: 1px solid rgba(217,48,63,0.45);
-    color: var(--threat-hi);
-    font-family: var(--F-display);
-    font-size: 14px;
-    letter-spacing: 3px;
-    padding: 12px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all var(--trans);
-    box-shadow: 0 0 16px rgba(217,48,63,0.2);
-}
-
-.confirm-btn-confirm:hover {
-    background: linear-gradient(135deg, #720d14, #961420);
-    box-shadow: 0 0 28px rgba(217,48,63,0.35);
-    transform: translateY(-1px);
 }
