@@ -1,6 +1,5 @@
 const API_BASE = 'http://localhost:3000/api';
 
-// Helper function for the actual fetch (not currently called) 
 async function _request(method, endpoint, body = null) {
     const headers = { 'Content-Type': 'application/json' };
     if (window.gameState.token) {

@@ -278,7 +278,6 @@
 }
 
 .cfg-preset.active::after {
-    content: '✓';
     position: absolute;
     inset: 0;
     display: flex;
@@ -378,14 +377,6 @@
     align-items: center;
     gap: 10px;
     margin-top: 6px;
-}
-
-.cfg-strength-track {
-    flex: 1;
-    height: 2px;
-    background: var(--bg-3);
-    border: 1px solid var(--border);
-    overflow: hidden;
 }
 
 .cfg-strength-fill {
@@ -509,12 +500,7 @@
 }
 
 #sec-security .cfg-actions {
-    border-top-color: rgba(168,85,247,0.2);
-}
-
-#sec-security .cfg-strength-track {
-    border-color: rgba(168,85,247,0.2);
-    background: rgba(168,85,247,0.06);
+    border-top: none;
 }
 
 #sec-security .form-label {

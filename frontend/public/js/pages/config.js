@@ -35,7 +35,6 @@ function renderConfigPage(container) {
             <div class="cfg-body">
                 <div class="cfg-content">
 
-                    <!-- ① OPERATOR IDENTITY -->
                     <section class="cfg-section" id="sec-identity">
                         <div class="cfg-section-head">
                             <div class="cfg-section-num">01</div>
