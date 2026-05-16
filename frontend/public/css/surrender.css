@@ -1,0 +1,121 @@
+#confirm-surrender {
+    position: fixed;
+    inset: 0;
+    background: rgba(2,10,19,0.92);
+    backdrop-filter: blur(14px);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+#confirm-surrender.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.confirm-surrender-panel {
+    position: relative;
+    width: 420px;
+    background: var(--bg-2);
+    border: 1px solid rgba(217,48,63,0.25);
+    border-top: 2px solid var(--threat-hi);
+    padding: 36px 32px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: csurrAppear 0.22s ease both;
+}
+
+@keyframes csurrAppear {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.csurr-tag {
+    font-family: var(--F-mono);
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--threat-hi);
+    opacity: 0.55;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.csurr-title {
+    font-family: var(--F-display);
+    font-size: 30px;
+    letter-spacing: 5px;
+    color: var(--threat-hi);
+    text-align: center;
+    text-shadow: 0 0 24px rgba(217,48,63,0.35);
+    margin-bottom: 12px;
+}
+
+.csurr-sub {
+    font-family: var(--F-mono);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.8;
+    max-width: 300px;
+    margin-bottom: 30px;
+}
+
+.csurr-sub em {
+    font-style: normal;
+    color: var(--threat-hi);
+    opacity: 0.85;
+}
+
+.csurr-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.csurr-btn-hold {
+    background: transparent;
+    border: 1px solid var(--border-2);
+    color: var(--text-dim);
+    font-family: var(--F-mono);
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    padding: 13px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all var(--trans);
+}
+
+.csurr-btn-hold:hover {
+    border-color: var(--j-blue);
+    color: var(--j-blue);
+    background: var(--j-blue-lo);
+}
+
+.csurr-btn-confirm {
+    background: linear-gradient(135deg, #5a0a10, #7a1018);
+    border: 1px solid rgba(217,48,63,0.45);
+    color: var(--threat-hi);
+    font-family: var(--F-display);
+    font-size: 15px;
+    letter-spacing: 3px;
+    padding: 13px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all var(--trans);
+    box-shadow: 0 0 16px rgba(217,48,63,0.18);
+}
+
+.csurr-btn-confirm:hover {
+    background: linear-gradient(135deg, #720d14, #961420);
+    box-shadow: 0 0 28px rgba(217,48,63,0.35);
+    transform: translateY(-1px);
+}

@@ -114,7 +114,6 @@ function _buildLayout(game) {
                 </div>
             </div>
 
-            <!-- CENTER DIVIDER -->
             <div class="game-center">
                 <div class="game-center-line"></div>
                 <div class="game-center-text">◈ active simulation field ◈</div>
@@ -143,7 +142,21 @@ function _buildLayout(game) {
 
         </div>
 
-        <!-- BOTTOM ACTIONS -->
+        <div id="confirm-surrender">
+            <div class="confirm-surrender-panel">
+                <div class="csurr-corner csurr-corner--tr"></div>
+                <div class="csurr-corner csurr-corner--bl"></div>
+                <div class="csurr-title">ABORT SIMULATION?</div>
+                <div class="csurr-sub">
+                    Terminating now registers as a <em>tactical failure</em>.
+                </div>
+                <div class="csurr-actions">
+                    <button class="csurr-btn-hold" id="btn-surrender-abort">↩ HOLD POSITION</button>
+                    <button class="csurr-btn-confirm" id="btn-surrender-confirm">ABORT SIM</button>
+                </div>
+            </div>
+        </div>
+
         <div class="game-actions">
             <div class="game-action-info" id="action-hint">
                 Select a card to deploy or attack
@@ -419,13 +432,19 @@ function _attachClickHandlers() {
     }
 
     const surrenderBtn = document.getElementById('btn-surrender');
+    const surrenderOverlay = document.getElementById('confirm-surrender');
     if (surrenderBtn) {
         surrenderBtn.addEventListener('click', () => {
-            if (confirm('Abort simulation? This counts as a loss.')) {
-                window.appSocket.emit('surrender', {});
-            }
+            surrenderOverlay.classList.add('active');
         });
     }
+    document.getElementById('btn-surrender-abort').addEventListener('click', () => {
+        surrenderOverlay.classList.remove('active');
+    });
+    document.getElementById('btn-surrender-confirm').addEventListener('click', () => {
+        surrenderOverlay.classList.remove('active');
+        window.appSocket.emit('surrender', {});
+    });
 }
 
 function _selectCard(type, index, card) {
@@ -656,8 +675,8 @@ function _animateOpponentAttack(attackerSlot, targetSlot, attackerName) {
 
     const startX = attackerRect.left + attackerRect.width / 2;
     const startY = attackerRect.top + attackerRect.height / 2;
-    const endX   = targetRect.left + targetRect.width / 2;
-    const endY   = targetRect.top + targetRect.height / 2;
+    const endX = targetRect.left + targetRect.width / 2;
+    const endY = targetRect.top + targetRect.height / 2;
 
     const comet = document.createElement('div');
     comet.className = 'attack-comet';
@@ -677,7 +696,7 @@ function _animateOpponentAttack(attackerSlot, targetSlot, attackerName) {
 
     comet.appendChild(tail);
     comet.appendChild(head);
-    document.body.appendChild(comet);
+    (document.getElementById('page-game') || document.body).appendChild(comet);
 
     const duration = 1100;
     const started = performance.now();
@@ -736,7 +755,7 @@ function _animateOpponentAttack(attackerSlot, targetSlot, attackerName) {
             explosion.appendChild(p);
         }
 
-        document.body.appendChild(explosion);
+        ( document.getElementById("page-game") || document.body).appendChild(explosion);
         targetEl.classList.add('attack-hit-flash');
 
         setTimeout(() => {
@@ -771,7 +790,7 @@ function _animateOpponentAttack(attackerSlot, targetSlot, attackerName) {
             const dy = src.y - y;
 
             seg.style.left = `${dx}px`;
-            seg.style.top  = `${dy}px`;
+            seg.style.top = `${dy}px`;
             seg.style.opacity = String(Math.max(0, fade));
             seg.style.transform = `translate(-50%, -50%) rotate(${tailAngle}deg) scale(${1 - i * 0.12})`;
         });
@@ -792,10 +811,10 @@ function _shootProjectile(fromEl, toEl) {
     const fromR = fromEl.getBoundingClientRect();
     const toR = toEl.getBoundingClientRect();
 
-    const x1 = fromR.left + fromR.width  / 2;
-    const y1 = fromR.top  + fromR.height / 2;
-    const x2 = toR.left   + toR.width    / 2;
-    const y2 = toR.top    + toR.height   / 2;
+    const x1 = fromR.left + fromR.width / 2;
+    const y1 = fromR.top + fromR.height / 2;
+    const x2 = toR.left + toR.width / 2;
+    const y2 = toR.top + toR.height / 2;
 
     // SVG beam line
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -811,7 +830,7 @@ function _shootProjectile(fromEl, toEl) {
     line.setAttribute('stroke-linecap', 'round');
     line.style.filter = 'drop-shadow(0 0 6px #ff4020)';
     svg.appendChild(line);
-    document.body.appendChild(svg);
+    ( document.getElementById("page-game") || document.body).appendChild(svg);
 
     // Animate line extending toward target
     const start = performance.now();
@@ -832,12 +851,10 @@ function _shootProjectile(fromEl, toEl) {
         spark.className = 'attack-spark';
         spark.style.cssText = `left:${x2}px; top:${y2}px;`;
         spark.textContent = '💥';
-        document.body.appendChild(spark);
+        ( document.getElementById("page-game") || document.body).appendChild(spark);
         setTimeout(() => spark.remove(), 500);
     }, dur + 20);
 }
-
-// ── Game over ────────────────────────────────────────────────────────────────
 
 function _showGameOver(isWin) {
     const oldOverlay = document.querySelector('.gameover-overlay');
