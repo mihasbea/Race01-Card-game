@@ -9,7 +9,20 @@ function _startTimer(seconds) {
     _timerInterval = setInterval(() => {
         remaining--;
         _updateTimerDOM(remaining);
-        if (remaining <= 0) _clearTimer();
+        if (remaining <= 0) {
+            _clearTimer();
+
+            const game = window.gameState.game;
+            if (game && game.currentTurn === 'you') {
+                _clearSelection();
+                
+                if (pendingAttack) {
+                    window.appSocket.emit('attack', pendingAttack);
+                }
+                
+                _setActionState(false);
+            }
+        }
     }, 1000);
 }
 

@@ -1,14 +1,23 @@
 const fs = require('fs');
-const express = require('express');
+const http = require('http');
 const path = require('path');
-const pool = require('./src/config/db');
+const express = require('express');
 const jwt = require('jsonwebtoken');
+const { Server } = require('socket.io');
 
+// Конфігураційні імпорти та модулі обробників
+const pool = require('./src/config/db');
 const UserService = require('./src/services/UserService');
 const BattleService = require('./src/services/BattleService');
+const { initSocketHandler } = require('./src/handlers/socketHandler');
 
+const PORT = 3000;
 const app = express();
 
+/**
+ * Runs structural initializations reading the file schema and configuring pool environments.
+ * @returns {Promise<void>} Resolves when connection logs verify setup execution.
+ */
 async function runSchema() {
     const sql = fs.readFileSync(path.join(__dirname, 'db.sql'), 'utf8');
     try {
@@ -22,12 +31,23 @@ async function runSchema() {
     }
 }
 
+/**
+ * Master server entrypoint orchestration execution wrapper loop.
+ */
 async function startServer() {
     await runSchema();
+
+    const server = http.createServer(app);
+    const io = new Server(server, {
+        cors: { origin: "*" }
+    });
 
     app.use(express.json());
     app.use(express.static(path.join(__dirname, '../frontend/public')));
 
+    /**
+     * Route handler for user signup and registration profiles.
+     */
     app.post('/api/auth/register', async (req, res) => {
         try {
             const { username, email, password } = req.body;
@@ -48,6 +68,9 @@ async function startServer() {
         }
     });
 
+    /**
+     * Route handler for validating profile sessions through logins.
+     */
     app.post('/api/auth/login', async (req, res) => {
         try {
             const { username, password } = req.body;
@@ -67,6 +90,9 @@ async function startServer() {
         }
     });
 
+    /**
+     * Route handler returning specific metrics tied to authentication identifiers.
+     */
     app.get('/api/users/me', async (req, res) => {
         try {
             const authHeader = req.headers.authorization;
@@ -88,13 +114,15 @@ async function startServer() {
                 losses: user.lost || 0, 
                 level: Math.floor((user.wins || 0) / 5) + 1
             });
-
         } catch (err) {
             console.error('Error in /api/users/me:', err);
             res.status(401).json({ message: 'Invalid or expired token' });
         }
     });
 
+    /**
+     * Route handler returning public ranking score summaries.
+     */
     app.get('/api/leaderboard', async (req, res) => {
         try {
             const players = await UserService.getLeaderboard(20);
@@ -116,13 +144,15 @@ async function startServer() {
             });
 
             res.json(leaderboard);
-        }
-        catch (err) {
+        } catch (err) {
             console.error('Error in /api/leaderboard:', err);
             res.status(500).json({ message: 'Server error' });
         }
     });
 
+    /**
+     * Route handler querying match array logs assigned to profile handles.
+     */
     app.get('/api/matches/recent', async (req, res) => {
         try {
             const authHeader = req.headers.authorization;
@@ -132,15 +162,18 @@ async function startServer() {
             const decoded = jwt.verify(token, 'SUPER_SECRET_KEY');
             const recentMatches = await BattleService.getRecentMatches(decoded.userId, 10);
             res.json(recentMatches);
-        }
-        catch (err) {
+        } catch (err) {
             console.error('Error in /api/matches/recent:', err);
             res.status(500).json({ message: 'Server error' });
         }
     });
 
-    app.listen(3000, () => {
-        console.log('Server is running on http://localhost:3000');
+    // Attach WebSocket Events Layer handler
+    initSocketHandler(io);
+
+    // Initial listener activation
+    server.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
     });
 }
 

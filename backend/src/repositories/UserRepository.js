@@ -6,7 +6,7 @@ class UserRepository {
      * Finds a single user by a specific column and value.
      * @param {string} column - The database column name (e.g., 'id', 'email').
      * @param {any} value - The value to search for.
-     * @returns {Promise<Object|null>} The user object if found, otherwise null.
+     * @returns {Promise<User|null>} The user entity instance if found, otherwise null.
      */
     async findOne(column, value) {
         try {
@@ -23,7 +23,7 @@ class UserRepository {
     }
 
     /**
-     * Saves a new user to the database.
+     * Saves a full user entity to the database (with stats like coins, wins, etc.).
      * @param {Object} user - The user entity containing all necessary fields.
      * @returns {Promise<number>} The ID of the newly created user.
      */
@@ -40,7 +40,16 @@ class UserRepository {
         }
     }
 
+    /**
+     * Creates a new user with basic credentials (usually for registration).
+     * @param {Object} credentials - The basic registration data.
+     * @param {string} credentials.username - The username of the new user.
+     * @param {string} credentials.email - The email address of the new user.
+     * @param {string} credentials.password - The hashed password of the new user.
+     * @returns {Promise<number>} The ID of the newly created user.
+     */
     async create({ username, email, password }) {
+        // Тут також варто було б додати try/catch для логування, як і в інших методах
         const [result] = await pool.query(
             `INSERT INTO card_game.users (username, email, password) VALUES (?, ?, ?)`,
             [username, email, password]
@@ -49,8 +58,9 @@ class UserRepository {
     }
 
     /**
-     * Retrieves all users sorted by wins, winrate, and level.
-     * @returns {Promise<Array>} An array of user objects.
+     * Retrieves a limited list of users sorted by wins to form a leaderboard.
+     * @param {number} number - The maximum number of users to retrieve (LIMIT).
+     * @returns {Promise<Array<Object>>} An array of user partial objects (id, username, wins, lost, winrate).
      */
     async getLeaderboard(number) {
         try {
@@ -69,7 +79,7 @@ class UserRepository {
      * Updates specific fields of a user by their ID.
      * @param {number} userId - The unique ID of the user to update.
      * @param {Object} updates - An object containing key-value pairs of fields to update.
-     * @returns {Promise<Object|void>} The database result object.
+     * @returns {Promise<Object|void>} The database result object or undefined if no fields provided.
      */
     async update(userId, updates) {
         const keys = Object.keys(updates);

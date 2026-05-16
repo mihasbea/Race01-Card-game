@@ -238,7 +238,7 @@ const mockSocket = (() => {
                     _trigger('preGame', { side: yourSide, cards: yourCards });
                 }, 2000);
                 break;
-
+                
             case 'selectCards': {
                 if (!_pgState) return;
                 const sel = _pgState.yourCards.filter(c => data.selectedIds.includes(c.instanceId));
@@ -319,4 +319,22 @@ const mockSocket = (() => {
     return { on, off, emit };
 })();
 
-window.appSocket = mockSocket;
+
+const socket = io("http://localhost:3000");
+
+const appSocket = {
+
+    on(event, cb) {
+        socket.on(event, cb);
+    },
+
+    off(event, cb) {
+        socket.off(event, cb);
+    },
+
+    emit(event, data) {
+        socket.emit(event, data);
+    }
+};
+
+window.appSocket = appSocket;

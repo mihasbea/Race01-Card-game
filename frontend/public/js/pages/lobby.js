@@ -145,7 +145,7 @@ function renderMenuPage(container) {
 
         window.appSocket.emit('joinQueue', {
             userId: window.gameState.userId,
-            token:  window.gameState.token,
+            username: window.gameState.username
         });
     }
 
@@ -219,7 +219,8 @@ function renderMenuPage(container) {
             document.getElementById('cmd-name').textContent = profile.username.toUpperCase();
             document.getElementById('cmd-wins').textContent = profile.wins || 0;
             document.getElementById('cmd-losses').textContent = profile.losses || 0;
-            const rate = profile.gamesPlayed > 0 ? Math.round((profile.wins / profile.gamesPlayed) * 100) : 0;
+            const gamesPlayed = profile.wins + profile.losses;
+            const rate = gamesPlayed > 0 ? Math.round((profile.wins / gamesPlayed) * 100) : 0;
             document.getElementById('cmd-rate').textContent = rate + '%';
 
             const winMsgEl = document.getElementById('sim-winrate-msg');

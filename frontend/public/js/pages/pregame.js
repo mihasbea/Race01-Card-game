@@ -50,8 +50,7 @@ function renderPreGamePage(container) {
         grid.innerHTML = cards.map(card => {
             const isSelected = selectedIds.includes(card.instanceId);
             return `
-                <div class="pregame-card hcard ${isSelected ? 'selected' : ''}"
-                        data-iid="${card.instanceId}">
+                <div class="pregame-card hcard ${isSelected ? 'selected' : ''}" data-iid="${card.instanceId}">
                     <div class="hcard-inner">
                         <div class="hcard-top" style="background:${sideColor};"></div>
                         <div class="hcard-cost-badge">${card.cost}</div>
@@ -65,36 +64,71 @@ function renderPreGamePage(container) {
                             <div class="hstat def">${card.def}</div>
                         </div>
                     </div>
-
                 </div>
             `;
         }).join('');
-
-        document.querySelectorAll('.pregame-card').forEach(el => {
-            el.addEventListener('click', () => {
-                const iid = el.dataset.iid;
-                if (selectedIds.includes(iid)) {
-                    selectedIds = selectedIds.filter(x => x !== iid);
-                } else {
-                    if (selectedIds.length >= 3) return;
-                    selectedIds.push(iid);
-                }
-                renderCards();
-                counter.textContent = `${selectedIds.length} / 3 SELECTED`;
-                const ready = selectedIds.length === 3;
-                confirmBtn.disabled = !ready;
-                confirmBtn.style.opacity = ready ? '1' : '0.4';
-            });
-        });
     }
 
+    grid.addEventListener('click', (e) => {
+        const cardEl = e.target.closest('.pregame-card');
+        if (!cardEl) return;
+
+        const iid = cardEl.dataset.iid;
+        if (selectedIds.includes(iid)) {
+            selectedIds = selectedIds.filter(x => x !== iid);
+        } else {
+            if (selectedIds.length >= 3) return;
+            selectedIds.push(iid);
+        }
+
+        renderCards();
+        
+        counter.textContent = `${selectedIds.length} / 3 SELECTED`;
+        const ready = selectedIds.length === 3;
+        confirmBtn.disabled = !ready;
+        confirmBtn.style.opacity = ready ? '1' : '0.4';
+    });
+
     renderCards();
+
+    function cleanupAllListeners() {
+        console.log('[PreGame] Cleaning up socket listeners');
+        window.appSocket.off('gameStart', onGameStart);
+        window.appSocket.off('selectionConfirmed', onSelectionConfirmed);
+        window.appSocket.off('pregameCancelled', onPregameCancelled);
+    }
+
+    function onPregameCancelled() {
+        console.log('[PreGame] Triggering onPregameCancelled');
+        alert('Your opponent has left the game setup.');
+        cleanupAllListeners();
+        window.appRouter.navigate('lobby');
+    }
+
+    function onGameStart(data) {
+        console.log('[PreGame] gameStart received', data);
+        window.gameState.game = data;
+        cleanupAllListeners();
+        window.appRouter.navigate('game');
+    }
+
+    function onSelectionConfirmed({ waiting }) {
+        console.log('[PreGame] selectionConfirmed, waiting:', waiting);
+        if (waiting) {
+            statusEl.textContent = 'Selection locked. Waiting for opponent…';
+        } else {
+            statusEl.textContent = 'Opponent ready! Starting simulation…';
+        }
+    }
+
+    window.appSocket.on('pregameCancelled', onPregameCancelled);
+    window.appSocket.on('gameStart', onGameStart);
+    window.appSocket.on('selectionConfirmed', onSelectionConfirmed);
 
     document.getElementById('pregame-cancel').addEventListener('click', () => {
         const btn = document.getElementById('pregame-cancel');
         if (btn.dataset.confirming) {
-            window.appSocket.off('gameStart', onGameStart);
-            window.appSocket.off('selectionConfirmed', onSelectionConfirmed);
+            cleanupAllListeners();
             window.appSocket.emit('cancelPregame');
             window.appRouter.navigate('lobby');
         } else {
@@ -121,27 +155,8 @@ function renderPreGamePage(container) {
         window.appSocket.emit('selectCards', { selectedIds });
     });
 
-    function onGameStart(data) {
-        console.log('[PreGame] gameStart received', data);
-        window.gameState.game = data;
-        window.appSocket.off('gameStart', onGameStart);
-        window.appRouter.navigate('game');
-    }
-    window.appSocket.on('gameStart', onGameStart);
-
-    function onSelectionConfirmed({ waiting }) {
-        console.log('[PreGame] selectionConfirmed, waiting:', waiting);
-        if (waiting) {
-            statusEl.textContent = 'Selection locked. Waiting for opponent…';
-        } else {
-            statusEl.textContent = 'Opponent ready! Starting simulation…';
-        }
-    }
-    window.appSocket.on('selectionConfirmed', onSelectionConfirmed);
-
     window.addEventListener('hashchange', function cleanup() {
-        window.appSocket.off('gameStart', onGameStart);
-        window.appSocket.off('selectionConfirmed', onSelectionConfirmed);
+        cleanupAllListeners();
         window.removeEventListener('hashchange', cleanup);
     });
 }
