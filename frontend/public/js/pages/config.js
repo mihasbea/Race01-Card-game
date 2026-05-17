@@ -18,7 +18,6 @@ function renderConfigPage(container) {
     container.innerHTML = `
         <div class="page" id="page-config">
 
-            <!-- Header bar -->
             <div class="cfg-topbar">
                 <button class="cfg-back-btn" id="cfg-back">
                     <span class="cfg-back-arrow">←</span>
@@ -31,7 +30,6 @@ function renderConfigPage(container) {
                 </div>
             </div>
 
-            <!-- Centered body -->
             <div class="cfg-body">
                 <div class="cfg-content">
 
@@ -45,12 +43,10 @@ function renderConfigPage(container) {
                             <div class="cfg-section-status" id="identity-status"></div>
                         </div>
 
-                        <!-- Avatar block -->
                         <div class="cfg-card">
                             <div class="cfg-card-label">OPERATOR INSIGNIA</div>
 
                             <div class="cfg-avatar-row">
-                                <!-- Live preview -->
                                 <div class="cfg-avatar-preview-wrap">
                                     <div class="cfg-avatar-ring-2"></div>
                                     <div class="cfg-avatar-ring"></div>
@@ -74,7 +70,7 @@ function renderConfigPage(container) {
                                             ↑ BROWSE FILE
                                             <input type="file" id="cfg-avatar-file" accept="image/*" style="display:none;">
                                         </label>
-                                        <span class="cfg-upload-hint" id="cfg-upload-hint">PNG / JPG · max 2 MB</span>
+                                        <span class="cfg-upload-hint" id="cfg-upload-hint">PNG / JPG max 2 MB</span>
                                     </div>
                                 </div>
                             </div>
@@ -83,12 +79,11 @@ function renderConfigPage(container) {
                                 <div class="cfg-avatar-feedback" id="feedback-avatar"></div>
                                 <button class="cfg-save-btn" id="btn-save-avatar">
                                     <span class="cfg-btn-text">SAVE INSIGNIA</span>
-                                    <span class="cfg-btn-spinner" hidden>■ SAVING…</span>
+                                    <span class="cfg-btn-spinner" hidden>SAVING…</span>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Callsign -->
                         <div class="cfg-card cfg-card-fields">
                             <div class="form-group cfg-callsign-field">
                                 <label class="form-label">CALLSIGN (display name)</label>
@@ -102,7 +97,7 @@ function renderConfigPage(container) {
                                 <div class="cfg-feedback" id="feedback-identity"></div>
                                 <button class="cfg-save-btn" id="btn-save-identity">
                                     <span class="cfg-btn-text">SAVE IDENTITY</span>
-                                    <span class="cfg-btn-spinner" hidden>■ SAVING…</span>
+                                    <span class="cfg-btn-spinner" hidden>SAVING…</span>
                                 </button>
                             </div>
                         </div>
@@ -110,7 +105,6 @@ function renderConfigPage(container) {
 
                     <div class="cfg-divider"></div>
 
-                    <!-- ② SECURITY PROTOCOL -->
                     <section class="cfg-section" id="sec-security">
                         <div class="cfg-section-head">
                             <div class="cfg-section-num">02</div>
@@ -122,14 +116,17 @@ function renderConfigPage(container) {
                         </div>
 
                         <div class="cfg-card cfg-card-fields">
-                            <div class="form-group">
-                                <label class="form-label">CURRENT PASSWORD</label>
-                                <div class="cfg-input-wrap">
-                                    <input class="form-input" id="cfg-pass-current" type="password"
-                                        placeholder="Enter current password" autocomplete="current-password">
-                                    <button class="cfg-eye-btn" data-target="cfg-pass-current" tabindex="-1">◎</button>
+                            <div class="cfg-field-row">
+                                <div class="form-group cfg-field">
+                                    <label class="form-label">CURRENT PASSWORD</label>
+                                    <div class="cfg-input-wrap">
+                                        <input class="form-input" id="cfg-pass-current" type="password"
+                                            placeholder="Enter current password" autocomplete="current-password">
+                                        <button class="cfg-eye-btn" data-target="cfg-pass-current" tabindex="-1">◎</button>
+                                    </div>
+                                    <span class="field-error" id="err-pass-current"></span>
                                 </div>
-                                <span class="field-error" id="err-pass-current"></span>
+                                <div></div>
                             </div>
 
                             <div class="cfg-field-row">
@@ -163,7 +160,7 @@ function renderConfigPage(container) {
                                 <div class="cfg-feedback" id="feedback-security"></div>
                                 <button class="cfg-save-btn cfg-save-btn--security" id="btn-save-security">
                                     <span class="cfg-btn-text">UPDATE PASSWORD</span>
-                                    <span class="cfg-btn-spinner" hidden>■ SAVING…</span>
+                                    <span class="cfg-btn-spinner" hidden>SAVING…</span>
                                 </button>
                             </div>
                         </div>
@@ -175,12 +172,12 @@ function renderConfigPage(container) {
         </div>
     `;
 
-    let selectedPreset = null; 
-    let customAvatarFile = null; 
+    let selectedPreset = null;
+    let customAvatarFile = null;
 
     (async () => {
         try {
-            const profile = await window.api.getProfile(); 
+            const profile = await window.api.getProfile();
             document.getElementById('cfg-username').value = profile.username || '';
             document.getElementById('cfg-topbar-user').textContent = (profile.username || 'COMMANDER').toUpperCase();
 
@@ -192,7 +189,7 @@ function renderConfigPage(container) {
             } else if (profile.username) {
                 _setPreviewInitials(profile.username.slice(0, 2).toUpperCase());
             }
-        } catch { /* non-fatal */ }
+        } catch {}
     })();
 
     document.getElementById('cfg-back').addEventListener('click', () => {
@@ -209,9 +206,8 @@ function renderConfigPage(container) {
     function _selectPreset(preset) {
         selectedPreset = preset;
         customAvatarFile = null;
-        document.getElementById('cfg-upload-hint').textContent = 'PNG / JPG · max 2 MB';
+        document.getElementById('cfg-upload-hint').textContent = 'PNG / JPG max 2 MB';
         document.getElementById('cfg-upload-hint').style.color = '';
-
         document.querySelectorAll('.cfg-preset').forEach(b => b.classList.remove('active'));
         document.querySelector(`.cfg-preset[data-preset="${preset.id}"]`)?.classList.add('active');
         _setPreviewImage(preset.src);
@@ -256,22 +252,22 @@ function renderConfigPage(container) {
         btn.addEventListener('click', () => {
             const input = document.getElementById(btn.dataset.target);
             if (!input) return;
-            input.type      = input.type === 'password' ? 'text' : 'password';
+            input.type = input.type === 'password' ? 'text' : 'password';
             btn.textContent = input.type === 'password' ? '◎' : '◉';
         });
     });
 
     document.getElementById('cfg-pass-new').addEventListener('input', e => {
-        const val  = e.target.value;
+        const val = e.target.value;
         const wrap = document.getElementById('strength-wrap');
         if (!val) { wrap.hidden = true; return; }
         wrap.hidden = false;
 
         const levels = [
-            { pct: '20%',  color: 'var(--threat-hi)', label: 'WEAK'},
-            { pct: '45%',  color: 'var(--warn-hi)',   label: 'FAIR'},
-            { pct: '72%',  color: 'var(--j-blue)',    label: 'GOOD'},
-            { pct: '100%', color: 'var(--ally-hi)',   label: 'STRONG'},
+            { pct: '20%',  color: 'var(--threat-hi)', label: 'WEAK' },
+            { pct: '45%',  color: 'var(--warn-hi)', label: 'FAIR' },
+            { pct: '72%',  color: 'var(--j-blue)', label: 'GOOD' },
+            { pct: '100%', color: 'var(--ally-hi)', label: 'STRONG' },
         ];
         const score = _scorePassword(val);
         const lvl = levels[Math.min(score, 3)];
@@ -291,6 +287,7 @@ function renderConfigPage(container) {
         if (/[^a-zA-Z0-9]/.test(p) || /\d/.test(p)) s++;
         return Math.min(s, 3);
     }
+
     document.getElementById('btn-save-avatar').addEventListener('click', async () => {
         _setFeedback('feedback-avatar', null);
 
@@ -302,13 +299,13 @@ function renderConfigPage(container) {
         _setBtnLoading('btn-save-avatar', true);
         try {
             const fd = new FormData();
-            if (selectedPreset)   fd.append('avatarPreset', selectedPreset.id);
+            if (selectedPreset) fd.append('avatarPreset', selectedPreset.id);
             if (customAvatarFile) fd.append('avatarFile',   customAvatarFile);
 
             await window.api.updateProfile(fd);
 
             customAvatarFile = null;
-            _setFeedback('feedback-avatar', '✓ Insignia updated', 'success');
+            _setFeedback('feedback-avatar', 'Insignia updated', 'success');
             _setStatusBadge('identity-status', 'SAVED', 'success');
         } catch (err) {
             _setFeedback('feedback-avatar', err?.message || 'Update failed. Try again.', 'error');
@@ -323,8 +320,8 @@ function renderConfigPage(container) {
         _clearErrors(['err-username']);
         _setFeedback('feedback-identity', null);
 
-        if (!username) { _setError('err-username', 'Callsign is required'); return; }
-        if (username.length < 3) { _setError('err-username', 'Minimum 3 characters'); return; }
+        if (!username) { _setError('err-username', 'Callsign is required');  return; }
+        if (username.length < 3){ _setError('err-username', 'Minimum 3 characters'); return; }
 
         _setBtnLoading('btn-save-identity', true);
         try {
@@ -335,7 +332,7 @@ function renderConfigPage(container) {
 
             window.gameState.username = username;
             document.getElementById('cfg-topbar-user').textContent = username.toUpperCase();
-            _setFeedback('feedback-identity', '✓ Callsign updated successfully', 'success');
+            _setFeedback('feedback-identity', 'Callsign updated successfully', 'success');
             _setStatusBadge('identity-status', 'SAVED', 'success');
         } catch (err) {
             _setFeedback('feedback-identity', err?.message || 'Update failed. Try again.', 'error');
@@ -347,7 +344,7 @@ function renderConfigPage(container) {
 
     document.getElementById('btn-save-security').addEventListener('click', async () => {
         const current = document.getElementById('cfg-pass-current').value;
-        const next    = document.getElementById('cfg-pass-new').value;
+        const next = document.getElementById('cfg-pass-new').value;
         const confirm = document.getElementById('cfg-pass-confirm').value;
 
         _clearErrors(['err-pass-current', 'err-pass-new', 'err-pass-confirm']);
@@ -355,8 +352,8 @@ function renderConfigPage(container) {
 
         let valid = true;
         if (!current) { _setError('err-pass-current', 'Current password is required'); valid = false; }
-        if (!next || next.length < 8) { _setError('err-pass-new',     'Minimum 8 characters'); valid = false; }
-        if (next && confirm !== next) { _setError('err-pass-confirm', 'Passwords do not match'); valid = false; }
+        if (!next || next.length < 8){ _setError('err-pass-new', 'Minimum 8 characters'); valid = false; }
+        if (next && confirm !== next){ _setError('err-pass-confirm', 'Passwords do not match'); valid = false; }
         if (!valid) return;
 
         _setBtnLoading('btn-save-security', true);
@@ -367,7 +364,7 @@ function renderConfigPage(container) {
                 .forEach(id => { document.getElementById(id).value = ''; });
             document.getElementById('strength-wrap').hidden = true;
 
-            _setFeedback('feedback-security', '✓ Password updated. New credentials are active.', 'success');
+            _setFeedback('feedback-security', 'Password updated. New credentials are active.', 'success');
             _setStatusBadge('security-status', 'SAVED', 'success');
         } catch (err) {
             const msg = err?.message || 'Failed to update password. Try again.';
@@ -380,7 +377,6 @@ function renderConfigPage(container) {
             _setBtnLoading('btn-save-security', false);
         }
     });
-
 
     function _setError(id, msg) {
         const el = document.getElementById(id);
@@ -405,14 +401,14 @@ function renderConfigPage(container) {
         if (!el) return;
         if (!msg) { el.textContent = ''; el.className = 'cfg-feedback'; return; }
         el.textContent = msg;
-        el.className   = `cfg-feedback cfg-feedback--${type}`;
+        el.className = `cfg-feedback cfg-feedback--${type}`;
     }
 
     function _setBtnLoading(id, loading) {
         const btn = document.getElementById(id);
         if (!btn) return;
         btn.disabled = loading;
-        btn.querySelector('.cfg-btn-text').hidden    =  loading;
+        btn.querySelector('.cfg-btn-text').hidden = loading;
         btn.querySelector('.cfg-btn-spinner').hidden = !loading;
     }
 
@@ -420,7 +416,7 @@ function renderConfigPage(container) {
         const el = document.getElementById(id);
         if (!el) return;
         el.textContent = text;
-        el.className   = `cfg-section-status cfg-section-status--${type}`;
+        el.className = `cfg-section-status cfg-section-status--${type}`;
         setTimeout(() => { el.textContent = ''; el.className = 'cfg-section-status'; }, 4000);
     }
 }
