@@ -66,6 +66,33 @@ window.apiGetRecentMatches = apiGetRecentMatches;
 async function apiGetLeaderboard() {
     return _request('GET', '/leaderboard');
 }
+
+async function _requestFormData(endpoint, formData) {
+    const headers = {};
+    if (window.gameState.token) {
+        headers['Authorization'] = `Bearer ${window.gameState.token}`;
+    }
+
+    const res = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'POST',
+        headers,
+        body: formData,
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: res.statusText }));
+        throw new Error(err.message || 'Server error');
+    }
+    return res.json();
+}
+
+async function apiUpdateProfile(formData) {
+    return _requestFormData('/users/profile', formData);
+}
+
+async function apiChangePassword({ currentPassword, newPassword }) {
+    return _request('POST', '/users/change-password', { currentPassword, newPassword });
+}
+
 window.apiGetLeaderboard = apiGetLeaderboard;
 
 window.apiGetLeaderboard = apiGetLeaderboard;
@@ -77,4 +104,6 @@ window.api = {
     getProfile: apiGetProfile,
     getRecentMatches: apiGetRecentMatches,
     getLeaderboard: apiGetLeaderboard,
+    updateProfile: apiUpdateProfile,
+    changePassword: apiChangePassword,
 };

@@ -4,12 +4,16 @@ const path = require('path');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
+const multer = require('multer');
 
-// Конфігураційні імпорти та модулі обробників
 const pool = require('./src/config/db');
 const UserService = require('./src/services/UserService');
 const BattleService = require('./src/services/BattleService');
 const { initSocketHandler } = require('./src/handlers/socketHandler');
+
+const upload = multer({
+    limits: { fileSize: 2 * 1024 * 1024 }
+});
 
 const PORT = 3000;
 const app = express();
@@ -102,14 +106,21 @@ async function startServer() {
             const decoded = jwt.verify(token, 'SUPER_SECRET_KEY');
             const user = await UserService.findById(decoded.userId);
 
-            if (!user) {
-                return res.status(404).json({ message: 'User not found' });
+            if (!user) return res.status(404).json({ message: 'User not found' });
+
+            let avatarUrl = null;
+            if (user.avatar_preset) {
+                avatarUrl = null; 
+            } else if (user.avatar) {
+                const base64Image = Buffer.from(user.avatar).toString('base64');
+                avatarUrl = `data:image/jpeg;base64,${base64Image}`;
             }
 
             res.json({
                 userId: user.id,
                 username: user.username,
-                avatar: user.avatar || 'assets/images/default-avatar.png',
+                avatarPreset: user.avatar_preset,
+                avatarUrl: avatarUrl,
                 wins: user.wins || 0,
                 losses: user.lost || 0, 
                 level: Math.floor((user.wins || 0) / 5) + 1
@@ -165,6 +176,84 @@ async function startServer() {
         } catch (err) {
             console.error('Error in /api/matches/recent:', err);
             res.status(500).json({ message: 'Server error' });
+        }
+    });
+
+    /**
+     * Route handler for updating user profile details including avatar management and username changes.
+     */
+    app.post('/api/users/profile', upload.single('avatarFile'), async (req, res) => {
+        try {
+            const authHeader = req.headers.authorization;
+            if (!authHeader) return res.status(401).json({ message: 'No token provided' });
+
+            const token = authHeader.split(' ')[1];
+            const decoded = jwt.verify(token, 'SUPER_SECRET_KEY');
+            const userId = decoded.userId;
+
+            const updates = {};
+
+            if (req.body.username) {
+                const username = req.body.username.trim();
+                if (username.length < 3) throw new Error('Minimum 3 characters');
+                
+                const existing = await UserService.findById(userId);
+                if (existing.username !== username) {
+                    const checkDup = await require('./src/repositories/UserRepository').findOne('username', username);
+                    if (checkDup) return res.status(400).json({ message: 'Username already taken' });
+                }
+                updates.username = username;
+            }
+
+            if (req.body.avatarPreset) {
+                updates.avatar_preset = req.body.avatarPreset;
+                updates.avatar = null;
+            } else if (req.file) {
+                updates.avatar = req.file.buffer;
+                updates.avatar_preset = null; 
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await UserService.updateUser(userId, updates);
+            }
+
+            res.json({ message: 'Profile updated successfully' });
+        } catch (err) {
+            console.error(err);
+            res.status(400).json({ message: err.message });
+        }
+    });
+
+    /**
+     * Route handler for changing user password with validation and hashing.
+     */
+    app.post('/api/users/change-password', async (req, res) => {
+        try {
+            const authHeader = req.headers.authorization;
+            if (!authHeader) return res.status(401).json({ message: 'No token provided' });
+
+            const token = authHeader.split(' ')[1];
+            const decoded = jwt.verify(token, 'SUPER_SECRET_KEY');
+            const userId = decoded.userId;
+
+            const { currentPassword, newPassword } = req.body;
+
+            const user = await UserService.findById(userId);
+            if (!user) return res.status(404).json({ message: 'User not found' });
+
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) return res.status(400).json({ message: 'Current password is incorrect' });
+
+            if (newPassword.length < 8) return res.status(400).json({ message: 'Minimum 8 characters' });
+
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+            await UserService.updateUser(userId, { password: hashedPassword });
+
+            res.json({ message: 'Password updated successfully' });
+        } catch (err) {
+            res.status(500).json({ message: err.message });
         }
     });
 
