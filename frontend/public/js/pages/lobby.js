@@ -86,7 +86,6 @@ function renderMenuPage(container) {
             </div>
         </div>
 
-        <!-- Searching overlay (matchmaking) -->
         <div id="match-searching">
             <div class="searching-panel">
                 <div class="searching-vs">
@@ -108,13 +107,12 @@ function renderMenuPage(container) {
             </div>
         </div>
 
-        </div>
-
-        <!-- BOTTOM-RIGHT Deploy button -->
         <button class="btn btn-primary" id="btn-deploy-main"
             style="position:fixed;bottom:28px;right:28px;z-index:99;margin:0;width:auto;padding:16px 52px;font-size:15px;letter-spacing:4px;box-shadow:0 0 32px rgba(0,120,255,0.4);">
             ⚔ DEPLOY
         </button>
+
+        </div>
     `;
 
     if (window.lucide) window.lucide.createIcons();
