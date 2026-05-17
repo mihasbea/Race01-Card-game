@@ -492,7 +492,7 @@ function _setPendingAttack(attackerSlot, targetSlot) {
     pendingAttack = { attackerSlot, targetSlot };
     if (targetSlot !== -1) {
         document.querySelectorAll('#board-opponent .bcard').forEach((el, i) => {
-            el.classList.toggle('attack-target', i === targetSlot);
+            el.classList.toggle('attack-target', parseInt(el.dataset.slot) === targetSlot);
         });
     }
     _setActionState(true);
@@ -847,7 +847,7 @@ function _shootProjectile(fromEl, toEl) {
 
     // Animate line extending toward target
     const start = performance.now();
-    const dur   = 350;
+    const dur = 350;
     function step(now) {
         const t = Math.min((now - start) / dur, 1);
         const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
