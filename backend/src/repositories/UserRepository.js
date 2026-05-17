@@ -49,7 +49,6 @@ class UserRepository {
      * @returns {Promise<number>} The ID of the newly created user.
      */
     async create({ username, email, password }) {
-        // Тут також варто було б додати try/catch для логування, як і в інших методах
         const [result] = await pool.query(
             `INSERT INTO card_game.users (username, email, password) VALUES (?, ?, ?)`,
             [username, email, password]

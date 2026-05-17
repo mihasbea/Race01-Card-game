@@ -7,11 +7,13 @@ class User {
     #wins;
     #lost;
     #winrate;
+    #avatar_preset;
+    #avatar;
 
     /**
      * @param {Object} data - User data object from DB or form
      */
-    constructor({ id, full_name = null, username, email, password, coins = 0, wins = 0, lost = 0}) {
+    constructor({ id, full_name = null, username, email, password, coins = 0, wins = 0, lost = 0, avatar_preset = null, avatar = null }) {
         this.#id = id;
         this.#username = username;
         this.#email = email;
@@ -19,7 +21,9 @@ class User {
         this.#coins = Number(coins);
         this.#wins = Number(wins);
         this.#lost = Number(lost);
-        
+        this.#avatar_preset = avatar_preset;
+        this.#avatar = avatar;
+
         this.#winrate = this._calculateWinrate();
     }
 
@@ -39,6 +43,8 @@ class User {
     get wins() { return this.#wins; }
     get lost() { return this.#lost; }
     get winrate() { return this.#winrate; }
+    get avatar_preset() { return this.#avatar_preset; }
+    get avatar() { return this.#avatar; }
 
     /**
      * Updates stats after a match
@@ -62,7 +68,9 @@ class User {
             coins: this.#coins,
             wins: this.#wins,
             lost: this.#lost,
-            winrate: this.#winrate
+            winrate: this.#winrate,
+            avatarPreset: this.#avatar_preset,
+            avatar: this.#avatar
         };
     }
 }

@@ -1,3 +1,14 @@
+const PRESETS = [
+    { id: 'ironman', src: '../../assets/avatars/ironman_icon.jpg' },
+    { id: 'cap', src: 'assets/avatars/cap_icon.jpg' },
+    { id: 'spiderman', src: 'assets/avatars/spiderman_icon.jpg' },
+    { id: 'strange', src: 'assets/avatars/strange_icon.jpg' },
+    { id: 'loki', src: 'assets/avatars/loki_icon.jpg' },
+    { id: 'venom', src: 'assets/avatars/venom_icon.jpg' },
+    { id: 'hutao', src: 'assets/avatars/hutao_icon.jpg' },
+    { id: 'neuvillette', src: 'assets/avatars/neuvillette_icon.jpg' },
+];
+
 function renderMenuPage(container) {
     if (!window.gameState.token) {
         window.appRouter.navigate('login');
@@ -108,6 +119,24 @@ function renderMenuPage(container) {
 
     if (window.lucide) window.lucide.createIcons();
 
+    async function _renderAvatar(profile, containerId) {
+        const avatarContainer = document.getElementById(containerId);
+        if (avatarContainer) {
+            if (profile.avatarPreset) {
+                const preset = PRESETS.find(p => p.id === profile.avatarPreset);
+                if (preset) {
+                    avatarContainer.innerHTML = `<img src="${preset.src}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+                } else {
+                    avatarContainer.textContent = (profile.username || '??').slice(0, 2).toUpperCase();
+                }
+            } else if (profile.avatarUrl) {
+                avatarContainer.innerHTML = `<img src="${profile.avatarUrl}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            } else {
+                avatarContainer.textContent = (profile.username || '??').slice(0, 2).toUpperCase();
+            }
+        }
+    }
+
     _loadProfileAndPopulate();
 
     let searchInterval = null;
@@ -127,11 +156,13 @@ function renderMenuPage(container) {
         if (btnDeployMain) btnDeployMain.disabled = true;
     }
 
-    function _startSearch() {
+    async function _startSearch() {
+        const profile = await window.api.getProfile();
         if (searchingOverlay.classList.contains('active')) return;
 
         searchingOverlay.classList.add('active');
         _disableDeployButtons();
+        _renderAvatar(profile, 'search-you-init');
 
         searchSeconds = 0;
         if (searchInterval) clearInterval(searchInterval);
@@ -215,7 +246,8 @@ function renderMenuPage(container) {
             window.gameState.username = profile.username;
             window.gameState.avatar = profile.avatar;
 
-            document.getElementById('cmd-avatar').textContent = profile.username.slice(0, 2).toUpperCase();
+            _renderAvatar(profile, 'cmd-avatar');
+
             document.getElementById('cmd-name').textContent = profile.username.toUpperCase();
             document.getElementById('cmd-wins').textContent = profile.wins || 0;
             document.getElementById('cmd-losses').textContent = profile.losses || 0;

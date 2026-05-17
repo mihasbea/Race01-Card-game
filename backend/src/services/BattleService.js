@@ -15,27 +15,27 @@ class BattleService {
             const battles = await BattleRepository.getRecentMatches(userId, limit);
 
             return battles.map(battle => {
-                // Захист: дістаємо ID незалежно від того, camelCase це чи snake_case від БД
-                const u1Id = battle.user1_id !== undefined ? battle.user1_id : battle.user1Id;
-                const u2Id = battle.user2_id !== undefined ? battle.user2_id : battle.user2Id;
+                const u1Id     = battle.user1_id !== undefined ? battle.user1_id : battle.user1Id;
+                const u2Id     = battle.user2_id !== undefined ? battle.user2_id : battle.user2Id;
                 const winnerId = battle.winner_id !== undefined ? battle.winner_id : battle.winnerId;
 
                 const isUser1 = Number(u1Id) === Number(userId);
-                
-                // Визначаємо результат матчу чітко по winnerId
+
                 let finalResult = 'loss';
                 if (Number(winnerId) === Number(userId)) {
                     finalResult = 'win';
                 } else if (!winnerId) {
-                    finalResult = 'draw'; // На випадок нічиєї/скасування
+                    finalResult = 'draw';
                 }
+
+                const rawTime = battle.battle_time || battle.battleTime;
 
                 return {
                     result: finalResult,
                     opponent: isUser1 ? battle.user2Username : battle.user1Username,
                     unitsDeployed: battle.units_deployed || battle.unitsDeployed,
                     turns: battle.turns,
-                    timeAgo: battle.battle_time || battle.battleTime
+                    timeAgo: this._formatTimeAgo(rawTime),
                 };
             });
         }
@@ -81,7 +81,6 @@ class BattleService {
                 const newWinrate = totalGames > 0 ? Math.round((newWins / totalGames) * 100) : 0;
                 
                 const currentCoins = user.coins || 0;
-                // Нарахування: +50 монет за перемогу, +10 монет за поразку
                 const newCoins = isWinner ? currentCoins + 50 : currentCoins + 10;
 
                 await UserRepository.update(userId, {
@@ -96,6 +95,16 @@ class BattleService {
         } catch (err) {
             console.error('Error in saveBattleResult:', err);
         }
+    }
+
+    _formatTimeAgo(dateVal) {
+        if (!dateVal) return 'recently';
+        const diff = Math.floor((Date.now() - new Date(dateVal).getTime()) / 1000);
+        if (diff < 60)         return 'just now';
+        if (diff < 3600)       return `${Math.floor(diff / 60)}m ago`;
+        if (diff < 86400)      return `${Math.floor(diff / 3600)}h ago`;
+        if (diff < 86400 * 7)  return `${Math.floor(diff / 86400)}d ago`;
+        return new Date(dateVal).toLocaleDateString();
     }
 }
 
