@@ -11,7 +11,7 @@ CREATE TABLE if NOT EXISTS users (
     lost INT DEFAULT 0,
     winrate DECIMAL(5, 2) DEFAULT 0.00,
     avatar MEDIUMBLOB,
-    avatar_preset VARCHAR(50) DEFAULT NULL;
+    avatar_preset VARCHAR(50) DEFAULT NULL
 );
 
 CREATE TABLE if NOT EXISTS battles (
