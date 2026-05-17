@@ -15,19 +15,17 @@ class BattleService {
             const battles = await BattleRepository.getRecentMatches(userId, limit);
 
             return battles.map(battle => {
-                // Захист: дістаємо ID незалежно від того, camelCase це чи snake_case від БД
                 const u1Id = battle.user1_id !== undefined ? battle.user1_id : battle.user1Id;
                 const u2Id = battle.user2_id !== undefined ? battle.user2_id : battle.user2Id;
                 const winnerId = battle.winner_id !== undefined ? battle.winner_id : battle.winnerId;
 
                 const isUser1 = Number(u1Id) === Number(userId);
                 
-                // Визначаємо результат матчу чітко по winnerId
                 let finalResult = 'loss';
                 if (Number(winnerId) === Number(userId)) {
                     finalResult = 'win';
                 } else if (!winnerId) {
-                    finalResult = 'draw'; // На випадок нічиєї/скасування
+                    finalResult = 'draw';
                 }
 
                 return {
