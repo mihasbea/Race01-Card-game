@@ -1,5 +1,7 @@
+const User = require('../entities/User');
 const Cards = require('../models/Cards');
 const BattleService = require('../services/BattleService');
+const UserService = require('../services/UserService');
 const { Server } = require('socket.io');
 
 // In-Memory Game States shared across websocket sessions
@@ -145,7 +147,12 @@ function initSocketHandler(io) {
                 socket.emit('selectionConfirmed', { waiting: false });
                 opponentObj.socket.emit('selectionConfirmed', { waiting: false });
 
-                startGame(currentPreGame, currentRoomId);
+                // ✅ Додаємо .catch() для обробки помилок
+                startGame(currentPreGame, currentRoomId).catch(err => {
+                    console.error('[Server] Error starting game:', err);
+                    socket.emit('gameError', { message: 'Failed to start game' });
+                    opponentObj.socket.emit('gameError', { message: 'Failed to start game' });
+                });
             }
         });
 
@@ -198,63 +205,73 @@ function initSocketHandler(io) {
             }, 950);
         });
 
-        /**
-         * Event listener for deploying a card instance from hand to an open field slot.
-         */
-        socket.on('playCard', async ({ cardId, instanceId, slotIndex }) => {
+        socket.on('playCard', async ({ cardIndex, fieldSlot }) => {
             const { game, isP1 } = _getGameBySocket(socket.id);
             if (!game) return;
 
             const player = isP1 ? game.p1 : game.p2;
-
             if (game.currentTurnId !== player.userId) return;
-            if (slotIndex < 0 || slotIndex > 2 || player.field[slotIndex] !== null) return;
 
-            const cardIdx = player.hand.findIndex(c => c.instanceId === instanceId);
-            if (cardIdx === -1) return;
+            const card = player.hand[cardIndex];
+            if (!card) return;
 
-            const card = player.hand.splice(cardIdx, 1)[0];
-            player.field[slotIndex] = card;
+            player.field[fieldSlot] = card;
+            player.hand.splice(cardIndex, 1);
             player.unitsDeployed++;
 
-            if (await _checkGameOver(game)) return;
-            _switchTurn(game);
+            const opponent = isP1 ? game.p2 : game.p1;
+
+            game.p1.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p1.userId) });
+            game.p2.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p2.userId) });
         });
 
-        /**
-         * Event listener for drawing the accumulated backup card from reserve into active hand.
-         */
-        socket.on('takeReserve', async () => {
+        socket.on('useReserve', async ({ fieldSlot }) => {
             const { game, isP1 } = _getGameBySocket(socket.id);
             if (!game) return;
 
             const player = isP1 ? game.p1 : game.p2;
             if (game.currentTurnId !== player.userId || !player.reserveCard) return;
 
-            player.hand.push(player.reserveCard);
+            player.field[fieldSlot] = player.reserveCard;
             player.reserveCard = null;
+            player.unitsDeployed++;
 
-            if (await _checkGameOver(game)) return;
+            game.p1.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p1.userId) });
+            game.p2.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p2.userId) });
+        });
+
+        socket.on('endTurn', async () => {
+            const { game, isP1 } = _getGameBySocket(socket.id);
+            if (!game) return;
+
+            const player = isP1 ? game.p1 : game.p2;
+            if (game.currentTurnId !== player.userId) return;
+
+            if (player.hand.length < 3) {
+                const newCards = Cards._deal(3 - player.hand.length, player.side, player.usedIds);
+                newCards.forEach(c => {
+                    player.usedIds.push(c.id);
+                    player.hand.push(c);
+                });
+            }
+
             _switchTurn(game);
         });
 
-        /**
-         * Event listener for manual game forfeit/surrender.
-         */
         socket.on('surrender', async () => {
             const { game, isP1 } = _getGameBySocket(socket.id);
             if (!game) return;
 
-            const loser = isP1 ? game.p1 : game.p2;
-            const winner = isP1 ? game.p2 : game.p1;
+            const wPlayer = isP1 ? game.p2 : game.p1;
+            const lPlayer = isP1 ? game.p1 : game.p2;
 
-            winner.socket.emit('gameOver', { winner: 'you' });
-            loser.socket.emit('gameOver', { winner: 'opponent' });
+            wPlayer.socket.emit('gameOver', { winner: 'you' });
+            lPlayer.socket.emit('gameOver', { winner: 'opponent' });
 
             await BattleService.saveBattleResult({
                 p1Id: game.p1.userId,
                 p2Id: game.p2.userId,
-                winnerId: winner.userId,
+                winnerId: wPlayer.userId,
                 turns: game.turnNumber,
                 unitsDeployed: game.p1.unitsDeployed + game.p2.unitsDeployed
             });
@@ -264,9 +281,9 @@ function initSocketHandler(io) {
     });
 
     /**
-     * Traverses active matches map to resolve global game state and index position by socket identifier.
-     * @param {string} socketId - Unique ID of the connected socket.
-     * @returns {Object} Wrapper object holding the matched game object and a boolean flag for Player 1.
+     * Finds a game instance by a socket connection ID and returns the game, as well as a p1-position flag.
+     * @param {string} socketId - The Socket.io connection identifier string.
+     * @returns {Object} { game, isP1 } where isP1 indicates if the socket is connected as player 1.
      * @private
      */
     function _getGameBySocket(socketId) {
@@ -382,35 +399,38 @@ function initSocketHandler(io) {
             you: {
                 userId: activePlayer.userId,
                 username: activePlayer.username,
-                avatar: activePlayer.avatar || 'assets/images/default-avatar.png',
                 hp: activePlayer.hp,
                 side: activePlayer.side,
                 hand: activePlayer.hand,
                 field: activePlayer.field,
                 reserveCard: activePlayer.reserveCard,
-                usedIds: activePlayer.usedIds
+                usedIds: activePlayer.usedIds,
+                avatar: activePlayer.avatar || null,
+                avatar_preset: activePlayer.avatar_preset || null
             },
             opponent: {
                 userId: opponentPlayer.userId,
                 username: opponentPlayer.username,
-                avatar: opponentPlayer.avatar || 'assets/images/default-avatar.png',
                 hp: opponentPlayer.hp,
                 side: opponentPlayer.side,
                 handCount: opponentPlayer.hand.length, 
                 field: opponentPlayer.field,
                 reserveCard: opponentPlayer.reserveCard,
-                usedIds: opponentPlayer.usedIds
+                usedIds: opponentPlayer.usedIds,
+                avatar: opponentPlayer.avatar || null,
+                avatar_preset: opponentPlayer.avatar_preset || null
             }
         };
     }
 
     /**
      * Constructs active server match room layouts by sorting selected units from active hand layouts.
+     * ✅ ВИПРАВЛЕНО: Зроблено async функція та додано await для завантаження даних користувача
      * @param {Object} preGameData - Aggregated pregame room information storage structure.
      * @param {string} roomId - Generated target room room string locator identifier.
      * @private
      */
-    function startGame(preGameData, roomId) {
+    async function startGame(preGameData, roomId) {
         const { p1, p2 } = preGameData;
 
         const p1Hand = p1.allCards.filter(c => !p1.selectedIds.includes(c.instanceId));
@@ -420,6 +440,23 @@ function initSocketHandler(io) {
         const p2Hand = p2.allCards.filter(c => !p2.selectedIds.includes(c.instanceId));
         const p2Field = [null, null, null];
         p2.allCards.filter(c => p2.selectedIds.includes(c.instanceId)).forEach((c, i) => { p2Field[i] = c; });
+
+        // ✅ ДОДАЄМО await - критичне виправлення!
+        const p1Data = await UserService.findById(p1.userId);
+        const p2Data = await UserService.findById(p2.userId);
+
+        // ✅ Конвертуємо avatar буфер в base64 для відображення у браузері
+        let p1AvatarUrl = null;
+        if (p1Data && p1Data.avatar) {
+            const base64Image = Buffer.from(p1Data.avatar).toString('base64');
+            p1AvatarUrl = `data:image/jpeg;base64,${base64Image}`;
+        }
+
+        let p2AvatarUrl = null;
+        if (p2Data && p2Data.avatar) {
+            const base64Image = Buffer.from(p2Data.avatar).toString('base64');
+            p2AvatarUrl = `data:image/jpeg;base64,${base64Image}`;
+        }
 
         const globalGameState = {
             roomId,
@@ -436,7 +473,9 @@ function initSocketHandler(io) {
                 field: p1Field,
                 reserveCard: null,
                 usedIds: p1.usedIds,
-                unitsDeployed: 3
+                unitsDeployed: 3,
+                avatar: p1AvatarUrl,                               // ✅ Конвертований base64 URL
+                avatar_preset: p1Data ? p1Data.avatar_preset : null
             },
             p2: {
                 socket: p2.socket,
@@ -448,7 +487,9 @@ function initSocketHandler(io) {
                 field: p2Field,
                 reserveCard: null,
                 usedIds: p2.usedIds,
-                unitsDeployed: 3
+                unitsDeployed: 3,
+                avatar: p2AvatarUrl,                               // ✅ Конвертований base64 URL
+                avatar_preset: p2Data ? p2Data.avatar_preset : null
             }
         };
 

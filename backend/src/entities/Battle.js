@@ -9,13 +9,13 @@ class Battle {
     /**
      * @param {Object} data - Battle data object
      */
-    constructor({ battle_time, units_deployed, turns, user1_id, user2_id, winner_id }) {
-        this.#battleTime = battle_time || new Date();
-        this.#unitsDeployed = Number(units_deployed) || 0;
-        this.#turns = Number(turns) || 0;
-        this.#user1Id = user1_id;
-        this.#user2Id = user2_id;
-        this.#winnerId = winner_id;
+    constructor(data) {
+        this.#battleTime    = data.battleTime    ?? data.battle_time    ?? new Date();
+        this.#unitsDeployed = Number(data.unitsDeployed ?? data.units_deployed) || 0;
+        this.#turns         = Number(data.turns) || 0;
+        this.#user1Id       = data.user1Id       ?? data.user1_id;
+        this.#user2Id       = data.user2Id       ?? data.user2_id;
+        this.#winnerId      = data.winnerId      ?? data.winner_id;
     }
 
     // GETTERS

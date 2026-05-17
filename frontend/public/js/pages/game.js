@@ -61,7 +61,7 @@ function _cycleJarvis() {
     }, 300);
 }
 
-function renderGamePage(container) {
+async function renderGamePage(container) {
     const game = window.gameState.game;
     if (!game) { window.appRouter.navigate('lobby'); return; }
 
@@ -76,6 +76,33 @@ function renderGamePage(container) {
     _jarvisInterval = setInterval(_cycleJarvis, 7000);
     _cycleJarvis();
     _setActionState(game.currentTurn === 'you');
+
+    await _loadMatchAvatars(game);
+}
+
+async function _loadMatchAvatars(game) {
+    const youAvatarContainer = document.getElementById(`avatar-${game.you.username}`);
+    const opponentAvatarContainer = document.getElementById(`avatar-${game.opponent.username}`);
+
+    await _loadAvatar(youAvatarContainer, game.you);
+    await _loadAvatar(opponentAvatarContainer, game.opponent);
+}
+
+async function _loadAvatar(avatarContainer, player) {
+    if (avatarContainer) {
+        if (player.avatar_preset) {
+            const preset = PRESETS.find(p => p.id === player.avatar_preset);
+            if (preset) {
+                avatarContainer.innerHTML = `<img src="${preset.src}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            } else {
+                avatarContainer.textContent = (player.username || '??').slice(0, 2).toUpperCase();
+            }
+        } else if (player.avatar) {
+            avatarContainer.innerHTML = `<img src="${player.avatar}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        } else {
+            avatarContainer.textContent = (player.username || '??').slice(0, 2).toUpperCase();
+        }
+    }
 }
 
 function _buildLayout(game) {
@@ -193,7 +220,7 @@ function _renderCombatant(player, side) {
 
     return `
     <div class="combatant">
-        <div class="combatant-avatar ${side}-av" id="avatar-${side}">${initials}</div>
+        <div class="combatant-avatar ${side}-av" id="avatar-${player.username}">${initials}</div>
         <div class="combatant-name">${player.username || 'Commander'}</div>
         <div class="hp-bar-wrap">
             <div class="hp-label">
@@ -410,7 +437,8 @@ function _attachClickHandlers() {
         });
     }
 
-    const avatarThreat = document.getElementById('avatar-threat');
+    const game = window.gameState.game;
+    const avatarThreat = game ? document.getElementById(`avatar-${game.opponent.username}`) : null;
     if (avatarThreat) {
         avatarThreat.addEventListener('click', () => {
             const game = window.gameState.game;
@@ -571,6 +599,8 @@ function _rerender() {
     if (isMyTurn) _startTimer(game.turnTimeLeft || 30);
     else _clearTimer();
 
+    _loadMatchAvatars(game);
+
     _setActionState(isMyTurn);
     _reattachClickHandlers();
 }
@@ -653,7 +683,7 @@ function _reattachClickHandlers() {
         });
     }
 
-    const avatar = document.getElementById('avatar-threat');
+    const avatar = document.getElementById(`avatar-${game.opponent.username}`);
     if (avatar) {
         const newAv = avatar.cloneNode(true);
         avatar.replaceWith(newAv);
