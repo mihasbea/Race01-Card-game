@@ -226,21 +226,30 @@ function initSocketHandler(io) {
             
             const gameState2 = serializeGameStateForPlayer(game, game.p2.userId);
             _addTimerDataToGameState(gameState2, game);
+            const cardIdx = player.hand.findIndex(c => c.instanceId === instanceId);
+            if (cardIdx === -1) return;
+
+            const card = player.hand[cardIdx];
+
+            if (slotIndex < 0 || slotIndex > 2 || player.field[slotIndex] !== null) return;
+
+            player.field[slotIndex] = card;
+            player.hand.splice(cardIdx, 1);
+            player.unitsDeployed++;
 
             game.p1.socket.emit('gameStateUpdate', { game: gameState1 });
             game.p2.socket.emit('gameStateUpdate', { game: gameState2 });
         });
 
-        socket.on('useReserve', async ({ fieldSlot }) => {
+        socket.on('takeReserve', async () => {
             const { game, isP1 } = _getGameBySocket(socket.id);
             if (!game) return;
 
             const player = isP1 ? game.p1 : game.p2;
             if (game.currentTurnId !== player.userId || !player.reserveCard) return;
 
-            player.field[fieldSlot] = player.reserveCard;
+            player.hand.push(player.reserveCard);
             player.reserveCard = null;
-            player.unitsDeployed++;
 
             game.p1.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p1.userId) });
             game.p2.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p2.userId) });

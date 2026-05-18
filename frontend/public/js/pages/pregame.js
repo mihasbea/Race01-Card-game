@@ -13,11 +13,6 @@ function renderPreGamePage(container) {
     container.innerHTML = `
         <div class="page" id="page-pregame">
             <div class="pregame-panel ${side === 'hero' ? 'pg-hero' : 'pg-villain'}">
-                <div class="corner tl"></div>
-                <div class="corner tr"></div>
-                <div class="corner bl"></div>
-                <div class="corner br"></div>
-
                 <div class="pregame-side-badge" style="color:${sideColor}">${sideLabel}</div>
                 <div class="pregame-title">DEPLOY FIELD UNITS</div>
                 <div class="pregame-instruction">
@@ -100,9 +95,35 @@ function renderPreGamePage(container) {
 
     function onPregameCancelled() {
         console.log('[PreGame] Triggering onPregameCancelled');
-        alert('Your opponent has left the game setup.');
         cleanupAllListeners();
-        window.appRouter.navigate('lobby');
+        showOpponentLeftOverlay();
+    }
+
+    function removeOpponentLeftOverlay() {
+        const existing = document.getElementById('opponent-left-overlay');
+        if (existing) existing.remove();
+    }
+
+    function showOpponentLeftOverlay() {
+        removeOpponentLeftOverlay();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'opponent-left-overlay';
+        overlay.innerHTML = `
+            <div class="opl-backdrop"></div>
+            <div class="opl-panel">
+                <div class="opl-icon">&#9888;</div>
+                <div class="opl-title">CONNECTION SEVERED</div>
+                <div class="opl-msg">Your opponent has abandoned the field.</div>
+                <button class="btn-ghost btn-sm opl-btn" id="opl-now-btn">&#8592; RETURN TO LOBBY</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        document.getElementById('opl-now-btn').addEventListener('click', () => {
+            removeOpponentLeftOverlay();
+            window.appRouter.navigate('lobby');
+        });
     }
 
     function onGameStart(data) {
@@ -157,6 +178,7 @@ function renderPreGamePage(container) {
 
     window.addEventListener('hashchange', function cleanup() {
         cleanupAllListeners();
+        removeOpponentLeftOverlay();
         window.removeEventListener('hashchange', cleanup);
     });
 }
