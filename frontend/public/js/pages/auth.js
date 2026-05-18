@@ -57,7 +57,7 @@ function renderLoginPage(container) {
             INITIATE SESSION
             </button>
             <div class="login-footer">
-            <a class="switch-tab-link" data-tab="register-form">Reset authorization code</a>
+            <a class="switch-tab-link" data-tab="register-form">New Operative</a>
             </div>
         </form>
 
