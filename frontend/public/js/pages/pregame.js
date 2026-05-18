@@ -13,11 +13,6 @@ function renderPreGamePage(container) {
     container.innerHTML = `
         <div class="page" id="page-pregame">
             <div class="pregame-panel ${side === 'hero' ? 'pg-hero' : 'pg-villain'}">
-                <div class="corner tl"></div>
-                <div class="corner tr"></div>
-                <div class="corner bl"></div>
-                <div class="corner br"></div>
-
                 <div class="pregame-side-badge" style="color:${sideColor}">${sideLabel}</div>
                 <div class="pregame-title">DEPLOY FIELD UNITS</div>
                 <div class="pregame-instruction">
