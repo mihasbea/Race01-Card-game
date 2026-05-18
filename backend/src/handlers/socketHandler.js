@@ -205,36 +205,37 @@ function initSocketHandler(io) {
             }, 950);
         });
 
-        socket.on('playCard', async ({ cardIndex, fieldSlot }) => {
+        socket.on('playCard', async ({ instanceId, slotIndex }) => {
             const { game, isP1 } = _getGameBySocket(socket.id);
             if (!game) return;
 
             const player = isP1 ? game.p1 : game.p2;
             if (game.currentTurnId !== player.userId) return;
 
-            const card = player.hand[cardIndex];
-            if (!card) return;
+            const cardIdx = player.hand.findIndex(c => c.instanceId === instanceId);
+            if (cardIdx === -1) return;
 
-            player.field[fieldSlot] = card;
-            player.hand.splice(cardIndex, 1);
+            const card = player.hand[cardIdx];
+
+            if (slotIndex < 0 || slotIndex > 2 || player.field[slotIndex] !== null) return;
+
+            player.field[slotIndex] = card;
+            player.hand.splice(cardIdx, 1);
             player.unitsDeployed++;
-
-            const opponent = isP1 ? game.p2 : game.p1;
 
             game.p1.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p1.userId) });
             game.p2.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p2.userId) });
         });
 
-        socket.on('useReserve', async ({ fieldSlot }) => {
+        socket.on('takeReserve', async () => {
             const { game, isP1 } = _getGameBySocket(socket.id);
             if (!game) return;
 
             const player = isP1 ? game.p1 : game.p2;
             if (game.currentTurnId !== player.userId || !player.reserveCard) return;
 
-            player.field[fieldSlot] = player.reserveCard;
+            player.hand.push(player.reserveCard);
             player.reserveCard = null;
-            player.unitsDeployed++;
 
             game.p1.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p1.userId) });
             game.p2.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p2.userId) });
@@ -424,8 +425,6 @@ function initSocketHandler(io) {
     }
 
     /**
-     * Constructs active server match room layouts by sorting selected units from active hand layouts.
-     * ✅ ВИПРАВЛЕНО: Зроблено async функція та додано await для завантаження даних користувача
      * @param {Object} preGameData - Aggregated pregame room information storage structure.
      * @param {string} roomId - Generated target room room string locator identifier.
      * @private
@@ -441,11 +440,9 @@ function initSocketHandler(io) {
         const p2Field = [null, null, null];
         p2.allCards.filter(c => p2.selectedIds.includes(c.instanceId)).forEach((c, i) => { p2Field[i] = c; });
 
-        // ✅ ДОДАЄМО await - критичне виправлення!
         const p1Data = await UserService.findById(p1.userId);
         const p2Data = await UserService.findById(p2.userId);
 
-        // ✅ Конвертуємо avatar буфер в base64 для відображення у браузері
         let p1AvatarUrl = null;
         if (p1Data && p1Data.avatar) {
             const base64Image = Buffer.from(p1Data.avatar).toString('base64');
@@ -474,7 +471,7 @@ function initSocketHandler(io) {
                 reserveCard: null,
                 usedIds: p1.usedIds,
                 unitsDeployed: 3,
-                avatar: p1AvatarUrl,                               // ✅ Конвертований base64 URL
+                avatar: p1AvatarUrl,                               
                 avatar_preset: p1Data ? p1Data.avatar_preset : null
             },
             p2: {
@@ -488,7 +485,7 @@ function initSocketHandler(io) {
                 reserveCard: null,
                 usedIds: p2.usedIds,
                 unitsDeployed: 3,
-                avatar: p2AvatarUrl,                               // ✅ Конвертований base64 URL
+                avatar: p2AvatarUrl,                               
                 avatar_preset: p2Data ? p2Data.avatar_preset : null
             }
         };
