@@ -121,7 +121,7 @@
 
 @keyframes cancelPulse {
     from { box-shadow: 0 0 6px rgba(168,85,247,0.15); }
-    to   { box-shadow: 0 0 16px rgba(168,85,247,0.4); }
+    to { box-shadow: 0 0 16px rgba(168,85,247,0.4); }
 }
 
 .pregame-counter {
@@ -145,4 +145,84 @@
     color: var(--j-blue);
     letter-spacing: 1.5px;
     margin-left: auto;
+}
+
+#opponent-left-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pageEnter 0.25s ease both;
+}
+
+.opl-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 10, 19, 0.88);
+    backdrop-filter: blur(6px);
+}
+
+.opl-panel {
+    position: relative;
+    width: 380px;
+    max-width: 92vw;
+    background: var(--bg-glass);
+    border: 1px solid rgba(217, 48, 63, 0.35);
+    border-top: 2px solid var(--threat-hi);
+    padding: 40px 36px 32px;
+    text-align: center;
+    box-shadow:
+        0 0 60px rgba(217, 48, 63, 0.18),
+        0 30px 80px rgba(0, 0, 0, 0.7);
+    animation: oplSlideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes oplSlideIn {
+    from { opacity: 0; transform: translateY(-18px) scale(0.97);}
+    to { opacity: 1; transform: translateY(0) scale(1);}
+}
+
+.opl-icon {
+    font-size: 32px;
+    color: var(--threat-hi);
+    text-shadow: 0 0 20px var(--threat-gl);
+    margin-bottom: 16px;
+    animation: oplPulse 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes oplPulse {
+    from { text-shadow: 0 0 10px var(--threat-gl); }
+    to { text-shadow: 0 0 28px var(--threat-gl), 0 0 48px rgba(217,48,63,0.25); }
+}
+
+.opl-title {
+    font-family: var(--F-display);
+    font-size: 26px;
+    letter-spacing: 5px;
+    color: var(--threat-hi);
+    margin-bottom: 12px;
+}
+
+.opl-msg {
+    font-family: var(--F-mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--text-mid);
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+
+
+.opl-btn {
+    border-color: rgba(217, 48, 63, 0.3);
+    color: var(--threat-hi);
+    letter-spacing: 2.5px;
+}
+
+.opl-btn:hover {
+    border-color: var(--threat-hi);
+    color: #ff6070;
+    box-shadow: 0 0 12px var(--threat-gl);
 }
