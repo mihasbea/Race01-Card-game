@@ -2,28 +2,63 @@ let selectedCard  = null;  // { type: 'hand'|'board', index, card }
 let pendingAttack = null;  // { attackerSlot, targetSlot }
 let _timerInterval = null;
 
-function _startTimer(seconds) {
+let _timerStartTime = null;
+let _timerServerTime = null;
+let _timerDuration = 30;
+
+function _startTimer(turnStartTime, serverTime, duration = 30) {
     _clearTimer();
-    let remaining = seconds;
+
+    _timerStartTime = turnStartTime;
+    _timerServerTime = serverTime;
+    _timerDuration = duration;
+
+    const elapsedMs = serverTime - turnStartTime;
+    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+    let remaining = duration - elapsedSeconds;
+    
+    remaining = Math.max(0, remaining);
     _updateTimerDOM(remaining);
+
+    if (remaining <= 0) {
+        _endTurnAuto();
+        return;
+    }
+
     _timerInterval = setInterval(() => {
         remaining--;
-        _updateTimerDOM(remaining);
+        
+        const displayTime = Math.max(0, remaining);
+        _updateTimerDOM(displayTime);
+        
         if (remaining <= 0) {
             _clearTimer();
-
+            
             const game = window.gameState.game;
             if (game && game.currentTurn === 'you') {
-                _clearSelection();
-                
-                if (pendingAttack) {
-                    window.appSocket.emit('attack', pendingAttack);
-                }
-                
-                _setActionState(false);
+                console.log('[Client] Timer expired - auto-ending turn');
+                _endTurnAuto(); 
             }
         }
     }, 1000);
+}
+
+function _endTurnAuto() {
+    _clearSelection();
+    
+    const game = window.gameState.game;
+    console.log('[Client] Auto-ending turn:', { hasAttack: !!pendingAttack });
+    
+    if (pendingAttack) {
+        console.log('[Client] Executing pending attack');
+        window.appSocket.emit('attack', pendingAttack);
+        pendingAttack = null;
+    }
+    
+    console.log('[Client] Emitting endTurn event');
+    window.appSocket.emit('endTurn');
+    
+    _setActionState(false);
 }
 
 function _clearTimer() {
@@ -70,9 +105,12 @@ function renderGamePage(container) {
     selectedCard = null;
     pendingAttack = null;
 
+    if (game.currentTurn === 'you' && game.turnStartTime && game.serverTime) {
+        _startTimer(game.turnStartTime, game.serverTime, game.turnTimeLeft || 30);
+    }
+
     container.innerHTML = _buildLayout(game);
     _attachSocketListeners();
-    _startTimer(game.turnTimeLeft || 30);
     _jarvisInterval = setInterval(_cycleJarvis, 7000);
     _cycleJarvis();
     _setActionState(game.currentTurn === 'you');
@@ -342,6 +380,14 @@ function _attachSocketListeners() {
 
     window.appSocket.on('gameStateUpdate', ({ game }) => {
         window.gameState.game = game;
+        
+        const isMyTurn = game.currentTurn === 'you';
+        if (isMyTurn && game.turnStartTime && game.serverTime) {
+            _startTimer(game.turnStartTime, game.serverTime, game.turnTimeLeft || 30);
+        } else {
+            _clearTimer();
+        }
+        
         _rerender();
     });
 
@@ -568,8 +614,12 @@ function _rerender() {
     const tn = document.querySelector('.game-topbar-info b');
     if (tn) tn.textContent = game.turnNumber;
 
-    if (isMyTurn) _startTimer(game.turnTimeLeft || 30);
-    else _clearTimer();
+    if (isMyTurn && game.turnStartTime && game.serverTime) {
+        _startTimer(game.turnStartTime, game.serverTime, game.turnTimeLeft || 30);
+    } else {
+        _clearTimer();
+        _updateTimerDOM(30);
+    }
 
     _setActionState(isMyTurn);
     _reattachClickHandlers();

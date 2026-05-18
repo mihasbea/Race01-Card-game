@@ -8,6 +8,7 @@ const { Server } = require('socket.io');
 const queue = [];
 const games = new Map();
 const preGames = new Map();
+const gameTurnTimers = new Map();
 
 /**
  * Initializes and binds all Socket.io event listeners for matchmaking and real-time game loops.
@@ -205,24 +206,29 @@ function initSocketHandler(io) {
             }, 950);
         });
 
-        socket.on('playCard', async ({ cardIndex, fieldSlot }) => {
+        socket.on('playCard', async ({ instanceId, slotIndex }) => {
             const { game, isP1 } = _getGameBySocket(socket.id);
             if (!game) return;
 
             const player = isP1 ? game.p1 : game.p2;
             if (game.currentTurnId !== player.userId) return;
 
+            const cardIndex = player.hand.findIndex(c => c.instanceId === instanceId);
             const card = player.hand[cardIndex];
             if (!card) return;
 
-            player.field[fieldSlot] = card;
+            player.field[slotIndex] = card;
             player.hand.splice(cardIndex, 1);
             player.unitsDeployed++;
 
-            const opponent = isP1 ? game.p2 : game.p1;
+            const gameState1 = serializeGameStateForPlayer(game, game.p1.userId);
+            _addTimerDataToGameState(gameState1, game);
+            
+            const gameState2 = serializeGameStateForPlayer(game, game.p2.userId);
+            _addTimerDataToGameState(gameState2, game);
 
-            game.p1.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p1.userId) });
-            game.p2.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p2.userId) });
+            game.p1.socket.emit('gameStateUpdate', { game: gameState1 });
+            game.p2.socket.emit('gameStateUpdate', { game: gameState2 });
         });
 
         socket.on('useReserve', async ({ fieldSlot }) => {
@@ -300,12 +306,51 @@ function initSocketHandler(io) {
      * @private
      */
     function _switchTurn(game) {
+        if (gameTurnTimers.has(game.roomId)) {
+            const oldTimer = gameTurnTimers.get(game.roomId);
+            if (oldTimer.timeout) clearTimeout(oldTimer.timeout);
+        }
+        
         game.currentTurnId = game.currentTurnId === game.p1.userId ? game.p2.userId : game.p1.userId;
         game.turnNumber++;
-        game.turnTimeLeft = 30;
 
-        game.p1.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p1.userId) });
-        game.p2.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p2.userId) });
+        const turnStartTime = Date.now();
+        const turnDuration = 30000;
+
+        game.turnStartTime = turnStartTime; 
+
+        const turnTimeout = setTimeout(() => {
+            console.log(`[Server] Auto-ending turn for player ${game.currentTurnId} in room ${game.roomId}`);
+            
+            const currentPlayer = game.currentTurnId === game.p1.userId ? game.p1 : game.p2;
+            
+            if (currentPlayer.hand.length < 3) {
+                const newCards = Cards._deal(3 - currentPlayer.hand.length, currentPlayer.side, currentPlayer.usedIds);
+                newCards.forEach(c => {
+                    currentPlayer.usedIds.push(c.id);
+                    currentPlayer.hand.push(c);
+                });
+            }
+            
+            if (games.has(game.roomId)) {
+                _switchTurn(game);
+            }
+        }, turnDuration);
+
+        gameTurnTimers.set(game.roomId, { 
+            startTime: turnStartTime, 
+            duration: 30,
+            timeout: turnTimeout 
+        });
+
+        const gameState1 = serializeGameStateForPlayer(game, game.p1.userId);
+        _addTimerDataToGameState(gameState1, game);
+        
+        const gameState2 = serializeGameStateForPlayer(game, game.p2.userId);
+        _addTimerDataToGameState(gameState2, game);
+
+        game.p1.socket.emit('gameStateUpdate', { game: gameState1 });
+        game.p2.socket.emit('gameStateUpdate', { game: gameState2 });
     }
 
     /**
@@ -425,7 +470,6 @@ function initSocketHandler(io) {
 
     /**
      * Constructs active server match room layouts by sorting selected units from active hand layouts.
-     * ✅ ВИПРАВЛЕНО: Зроблено async функція та додано await для завантаження даних користувача
      * @param {Object} preGameData - Aggregated pregame room information storage structure.
      * @param {string} roomId - Generated target room room string locator identifier.
      * @private
@@ -441,11 +485,9 @@ function initSocketHandler(io) {
         const p2Field = [null, null, null];
         p2.allCards.filter(c => p2.selectedIds.includes(c.instanceId)).forEach((c, i) => { p2Field[i] = c; });
 
-        // ✅ ДОДАЄМО await - критичне виправлення!
         const p1Data = await UserService.findById(p1.userId);
         const p2Data = await UserService.findById(p2.userId);
 
-        // ✅ Конвертуємо avatar буфер в base64 для відображення у браузері
         let p1AvatarUrl = null;
         if (p1Data && p1Data.avatar) {
             const base64Image = Buffer.from(p1Data.avatar).toString('base64');
@@ -458,11 +500,16 @@ function initSocketHandler(io) {
             p2AvatarUrl = `data:image/jpeg;base64,${base64Image}`;
         }
 
+        const turnStartTime = Date.now();
+        const turnDuration = 30000;
+
         const globalGameState = {
             roomId,
             turnNumber: 1,
             currentTurnId: Math.random() < 0.5 ? p1.userId : p2.userId,
             turnTimeLeft: 30,
+            turnStartTime: turnStartTime,
+            turnServerTime: Date.now(),
             p1: {
                 socket: p1.socket,
                 userId: p1.userId,
@@ -474,7 +521,7 @@ function initSocketHandler(io) {
                 reserveCard: null,
                 usedIds: p1.usedIds,
                 unitsDeployed: 3,
-                avatar: p1AvatarUrl,                               // ✅ Конвертований base64 URL
+                avatar: p1AvatarUrl,
                 avatar_preset: p1Data ? p1Data.avatar_preset : null
             },
             p2: {
@@ -488,7 +535,7 @@ function initSocketHandler(io) {
                 reserveCard: null,
                 usedIds: p2.usedIds,
                 unitsDeployed: 3,
-                avatar: p2AvatarUrl,                               // ✅ Конвертований base64 URL
+                avatar: p2AvatarUrl,
                 avatar_preset: p2Data ? p2Data.avatar_preset : null
             }
         };
@@ -496,11 +543,47 @@ function initSocketHandler(io) {
         games.set(roomId, globalGameState);
         preGames.delete(roomId);
 
-        console.log(`[Server] Both players ready. Sending gameStart for room ${roomId}`);
+        const turnTimeout = setTimeout(() => {
+            console.log(`[Server] Auto-ending turn for player ${globalGameState.currentTurnId}`);
+            const currentPlayer = globalGameState.currentTurnId === globalGameState.p1.userId ? globalGameState.p1 : globalGameState.p2;
+            
+            if (currentPlayer.hand.length < 3) {
+                const newCards = Cards._deal(3 - currentPlayer.hand.length, currentPlayer.side, currentPlayer.usedIds);
+                newCards.forEach(c => {
+                    currentPlayer.usedIds.push(c.id);
+                    currentPlayer.hand.push(c);
+                });
+            }
+            
+            if (games.has(roomId)) {
+                _switchTurn(globalGameState);
+            }
+        }, turnDuration);
 
-        p1.socket.emit('gameStart', serializeGameStateForPlayer(globalGameState, p1.userId));
-        p2.socket.emit('gameStart', serializeGameStateForPlayer(globalGameState, p2.userId));
+        gameTurnTimers.set(roomId, { 
+            startTime: turnStartTime, 
+            duration: 30,
+            timeout: turnTimeout 
+        });
+
+        const gameState1 = serializeGameStateForPlayer(globalGameState, p1.userId);
+        gameState1.turnStartTime = turnStartTime;
+        gameState1.serverTime = Date.now();
+        
+        const gameState2 = serializeGameStateForPlayer(globalGameState, p2.userId);
+        gameState2.turnStartTime = turnStartTime;
+        gameState2.serverTime = Date.now();
+
+        p1.socket.emit('gameStart', gameState1);
+        p2.socket.emit('gameStart', gameState2);
     }
+
+    function _addTimerDataToGameState(gameState, game) {
+    gameState.turnStartTime = game.turnStartTime;
+    gameState.serverTime = Date.now();
+    gameState.turnTimeLeft = 30; 
+    return gameState;
+}
 }
 
 module.exports = { initSocketHandler };
