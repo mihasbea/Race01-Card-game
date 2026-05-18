@@ -61,7 +61,7 @@ function _cycleJarvis() {
     }, 300);
 }
 
-async function renderGamePage(container) {
+function renderGamePage(container) {
     const game = window.gameState.game;
     if (!game) { window.appRouter.navigate('lobby'); return; }
 
@@ -76,33 +76,6 @@ async function renderGamePage(container) {
     _jarvisInterval = setInterval(_cycleJarvis, 7000);
     _cycleJarvis();
     _setActionState(game.currentTurn === 'you');
-
-    await _loadMatchAvatars(game);
-}
-
-async function _loadMatchAvatars(game) {
-    const youAvatarContainer = document.getElementById(`avatar-${game.you.username}`);
-    const opponentAvatarContainer = document.getElementById(`avatar-${game.opponent.username}`);
-
-    await _loadAvatar(youAvatarContainer, game.you);
-    await _loadAvatar(opponentAvatarContainer, game.opponent);
-}
-
-async function _loadAvatar(avatarContainer, player) {
-    if (avatarContainer) {
-        if (player.avatar_preset) {
-            const preset = PRESETS.find(p => p.id === player.avatar_preset);
-            if (preset) {
-                avatarContainer.innerHTML = `<img src="${preset.src}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-            } else {
-                avatarContainer.textContent = (player.username || '??').slice(0, 2).toUpperCase();
-            }
-        } else if (player.avatar) {
-            avatarContainer.innerHTML = `<img src="${player.avatar}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-        } else {
-            avatarContainer.textContent = (player.username || '??').slice(0, 2).toUpperCase();
-        }
-    }
 }
 
 function _buildLayout(game) {
@@ -220,7 +193,7 @@ function _renderCombatant(player, side) {
 
     return `
     <div class="combatant">
-        <div class="combatant-avatar ${side}-av" id="avatar-${player.username}">${initials}</div>
+        <div class="combatant-avatar ${side}-av" id="avatar-${side}">${initials}</div>
         <div class="combatant-name">${player.username || 'Commander'}</div>
         <div class="hp-bar-wrap">
             <div class="hp-label">
@@ -437,8 +410,7 @@ function _attachClickHandlers() {
         });
     }
 
-    const game = window.gameState.game;
-    const avatarThreat = game ? document.getElementById(`avatar-${game.opponent.username}`) : null;
+    const avatarThreat = document.getElementById('avatar-threat');
     if (avatarThreat) {
         avatarThreat.addEventListener('click', () => {
             const game = window.gameState.game;
@@ -520,7 +492,7 @@ function _setPendingAttack(attackerSlot, targetSlot) {
     pendingAttack = { attackerSlot, targetSlot };
     if (targetSlot !== -1) {
         document.querySelectorAll('#board-opponent .bcard').forEach((el, i) => {
-            el.classList.toggle('attack-target', parseInt(el.dataset.slot) === targetSlot);
+            el.classList.toggle('attack-target', i === targetSlot);
         });
     }
     _setActionState(true);
@@ -599,8 +571,6 @@ function _rerender() {
     if (isMyTurn) _startTimer(game.turnTimeLeft || 30);
     else _clearTimer();
 
-    _loadMatchAvatars(game);
-
     _setActionState(isMyTurn);
     _reattachClickHandlers();
 }
@@ -617,7 +587,7 @@ function _reattachClickHandlers() {
             if (game.currentTurn !== 'you') return;
             const hcard = e.target.closest('.hcard');
             if (!hcard) return;
-            const idx  = parseInt(hcard.dataset.handIdx);
+            const idx = parseInt(hcard.dataset.handIdx);
             const card = game.you.hand[idx];
             if (card) _selectCard('hand', idx, card);
         });
@@ -630,10 +600,10 @@ function _reattachClickHandlers() {
         newBoard.addEventListener('click', e => {
             if (game.currentTurn !== 'you') return;
             const bcard = e.target.closest('.bcard');
-            const slot  = e.target.closest('.board-slot');
+            const slot = e.target.closest('.board-slot');
             if (bcard && bcard.dataset.side === 'cmd') {
                 const slotIdx = parseInt(bcard.dataset.slot);
-                const card    = game.you.field[slotIdx];
+                const card = game.you.field[slotIdx];
                 if (card) _selectCard('board', slotIdx, card);
                 return;
             }
@@ -664,10 +634,14 @@ function _reattachClickHandlers() {
         const newTake = takeBtn.cloneNode(true);
         takeBtn.replaceWith(newTake);
         newTake.addEventListener('click', () => {
+            console.log('Take reserve clicked'); 
+            if (game.currentTurn !== 'you') return;
             _clearSelection();
             window.appSocket.emit('takeReserve', {});
             _setActionState(false);
         });
+    } else {
+        console.warn('btn-take-reserve not found in DOM');
     }
 
     const endBtn = document.getElementById('btn-end-turn');
@@ -683,7 +657,8 @@ function _reattachClickHandlers() {
         });
     }
 
-    const avatar = document.getElementById(`avatar-${game.opponent.username}`);
+
+    const avatar = document.getElementById('avatar-threat');
     if (avatar) {
         const newAv = avatar.cloneNode(true);
         avatar.replaceWith(newAv);
@@ -877,7 +852,7 @@ function _shootProjectile(fromEl, toEl) {
 
     // Animate line extending toward target
     const start = performance.now();
-    const dur = 350;
+    const dur   = 350;
     function step(now) {
         const t = Math.min((now - start) / dur, 1);
         const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
