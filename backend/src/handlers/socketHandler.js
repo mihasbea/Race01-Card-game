@@ -244,6 +244,8 @@ function initSocketHandler(io) {
 
             game.p1.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p1.userId) });
             game.p2.socket.emit('gameStateUpdate', { game: serializeGameStateForPlayer(game, game.p2.userId) });
+            
+            _switchTurn(game);
         });
 
         socket.on('endTurn', async () => {
