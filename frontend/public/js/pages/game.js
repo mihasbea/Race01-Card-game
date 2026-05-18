@@ -183,11 +183,8 @@ function _buildLayout(game) {
                     ${_renderReserveCard(game.you.reserveCard, isMyTurn)}
                 </div>
 
-                <div class="hand-wrap">
-                    <div class="hand-label">Combat Hand (${game.you.hand.length})</div>
-                    <div class="hand-cards" id="hand-cards">
-                        ${_renderHand(game.you.hand)}
-                    </div>
+                <div class="hand-wrap" id="hand-wrap">
+                    ${_renderHand(game.you.hand)}
                 </div>
             </div>
 
@@ -279,8 +276,17 @@ function _renderReserveCard(card, isMyTurn) {
 }
 
 function _renderHand(cards = []) {
-    if (!cards.length) return '<div style="font-family:var(--F-mono);font-size:10px;color:var(--text-dim);opacity:0.5;padding:10px;">No cards in hand</div>';
-    return cards.map((card, idx) => `
+    const handCount = cards.length; 
+
+    if (!cards.length) {
+        return `
+            <div class="hand-label">Combat Hand (0)</div>
+            <div style="font-family:var(--F-mono);font-size:10px;color:var(--text-dim);opacity:0.5;padding:10px;">No cards in hand</div>
+        `;
+    }
+    
+    return `<div class="hand-label">Combat Hand (${handCount})</div>
+                <div class="hand-cards" id="hand-cards">` + cards.map((card, idx) => `
         <div class="hcard" data-hand-idx="${idx}" data-instance="${card.instanceId}">
             <div class="hcard-inner">
                 <div class="hcard-top" style="background:${window.gameState.game?.you.side==='villain'?'#a855f7':'var(--j-blue)'};"></div>
@@ -296,7 +302,7 @@ function _renderHand(cards = []) {
                 </div>
             </div>
         </div>
-    `).join('');
+    `).join('') + `</div>`;
 }
 
 function _renderPlayerBoard(field = [null, null, null]) {
@@ -589,7 +595,7 @@ function _rerender() {
 
     const bp = document.getElementById('board-player');
     const bo = document.getElementById('board-opponent');
-    const hc = document.getElementById('hand-cards');
+    const hc = document.getElementById('hand-wrap');
     const rw = document.getElementById('reserve-wrap');
     const oh = document.querySelector('.opp-hand-wrap');
 
