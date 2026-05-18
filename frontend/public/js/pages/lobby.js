@@ -288,7 +288,6 @@ function renderMenuPage(container) {
                 <div class="match-result">${m.result === 'win' ? 'WIN' : 'FAIL'}</div>
                 <div>
                     <div class="match-opponent">${m.opponent}</div>
-                    <div class="match-opponent-label">${m.opponentClearance || 'Standard'}</div>
                 </div>
                 <div class="match-info"><b>${m.unitsDeployed || '?'}</b> units deployed</div>
                 <div class="match-info"><b>${m.turns || '?'}</b> turns</div>
