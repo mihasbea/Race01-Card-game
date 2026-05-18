@@ -217,6 +217,7 @@ function initSocketHandler(io) {
             const card = player.hand[cardIndex];
             if (!card) return;
 
+            if (slotIndex < 0 || slotIndex > 2 || player.field[slotIndex] !== null) return;
             player.field[slotIndex] = card;
             player.hand.splice(cardIndex, 1);
             player.unitsDeployed++;
@@ -226,16 +227,6 @@ function initSocketHandler(io) {
             
             const gameState2 = serializeGameStateForPlayer(game, game.p2.userId);
             _addTimerDataToGameState(gameState2, game);
-            const cardIdx = player.hand.findIndex(c => c.instanceId === instanceId);
-            if (cardIdx === -1) return;
-
-            const card = player.hand[cardIdx];
-
-            if (slotIndex < 0 || slotIndex > 2 || player.field[slotIndex] !== null) return;
-
-            player.field[slotIndex] = card;
-            player.hand.splice(cardIdx, 1);
-            player.unitsDeployed++;
 
             game.p1.socket.emit('gameStateUpdate', { game: gameState1 });
             game.p2.socket.emit('gameStateUpdate', { game: gameState2 });
