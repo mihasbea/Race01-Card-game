@@ -221,15 +221,42 @@ function _buildLayout(game) {
     `;
 }
 
+function _resolveAvatarContent(player) {
+    const initials = (player.username || '??').slice(0, 2).toUpperCase();
+
+    if (player.avatar_preset) {
+        const _presets = [
+            { id: 'ironman',     src: 'assets/avatars/ironman_icon.jpg' },
+            { id: 'cap',         src: 'assets/avatars/cap_icon.jpg' },
+            { id: 'spiderman',   src: 'assets/avatars/spiderman_icon.jpg' },
+            { id: 'strange',     src: 'assets/avatars/strange_icon.jpg' },
+            { id: 'loki',        src: 'assets/avatars/loki_icon.jpg' },
+            { id: 'venom',       src: 'assets/avatars/venom_icon.jpg' },
+            { id: 'hutao',       src: 'assets/avatars/hutao_icon.jpg' },
+            { id: 'neuvillette', src: 'assets/avatars/neuvillette_icon.jpg' },
+        ];
+        const preset = _presets.find(p => p.id === player.avatar_preset);
+        if (preset) {
+            return `<img src="${preset.src}" alt="${initials}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        }
+    }
+
+    if (player.avatar) {
+        return `<img src="${player.avatar}" alt="${initials}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    }
+
+    return initials;
+}
+
 function _renderCombatant(player, side) {
     const maxHp = 20;
     const hpPct = Math.max(0, Math.round((player.hp / maxHp) * 100));
-    const initials = (player.username || '??').slice(0, 2).toUpperCase();
     const sideStr  = side === 'threat' ? 'threat-hi' : 'j-blue';
+    const avatarContent = _resolveAvatarContent(player);
 
     return `
     <div class="combatant">
-        <div class="combatant-avatar ${side}-av" id="avatar-${side}">${initials}</div>
+        <div class="combatant-avatar ${side}-av" id="avatar-${side}">${avatarContent}</div>
         <div class="combatant-name">${player.username || 'Commander'}</div>
         <div class="hp-bar-wrap">
             <div class="hp-label">
@@ -765,7 +792,6 @@ function _reattachClickHandlers() {
         });
     }
 
-
     const avatar = document.getElementById('avatar-threat');
     if (avatar) {
         const newAv = avatar.cloneNode(true);
@@ -958,7 +984,6 @@ function _shootProjectile(fromEl, toEl) {
     svg.appendChild(line);
     ( document.getElementById("page-game") || document.body).appendChild(svg);
 
-    // Animate line extending toward target
     const start = performance.now();
     const dur = 350;
     function step(now) {
