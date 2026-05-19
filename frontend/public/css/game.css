@@ -168,7 +168,6 @@
     }
 }
 
-/* Push hand and opp-hand to the far right in their flex zones */
 .zone-player > .hand-wrap {
     margin-left: auto;
     flex-shrink: 0;
@@ -198,12 +197,31 @@
 }
 
 .game-center-text {
-    font-family: var(--F-mono);
-    font-size: 9px;
-    letter-spacing: 6px;
-    color: var(--j-blue);
-    opacity: 0.4;
+    font-family: var(--F-display);
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 5px;
     text-transform: uppercase;
+    transition: color 0.4s ease, text-shadow 0.4s ease;
+}
+
+.game-center-text.your-turn {
+    color: var(--threat-hi);
+    opacity: 1;
+    text-shadow: 0 0 12px var(--threat-gl);
+    animation: turnPulse 2.4s ease-in-out infinite;
+}
+
+.game-center-text.opp-turn {
+    color: #b06ef5;
+    opacity: 1;
+    text-shadow: 0 0 12px rgba(176,110,245,0.45);
+    animation: turnPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes turnPulse {
+    0%, 100% { opacity: 0.75; }
+    50%       { opacity: 1; }
 }
 
 .combatant {

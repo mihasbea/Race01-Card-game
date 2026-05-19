@@ -168,7 +168,7 @@ function _buildLayout(game) {
 
             <div class="game-center">
                 <div class="game-center-line"></div>
-                <div class="game-center-text">◈ active simulation field ◈</div>
+                <div class="game-center-text ${isMyTurn ? 'your-turn' : 'opp-turn'}">${isMyTurn ? 'YOUR TURN' : "OPPONENT'S TURN"}</div>
                 <div class="game-center-line"></div>
             </div>
 
@@ -584,8 +584,8 @@ function _clearSelection() {
 function _setPendingAttack(attackerSlot, targetSlot) {
     pendingAttack = { attackerSlot, targetSlot };
     if (targetSlot !== -1) {
-        document.querySelectorAll('#board-opponent .bcard').forEach((el, i) => {
-            el.classList.toggle('attack-target', i === targetSlot);
+        document.querySelectorAll('#board-opponent .bcard').forEach((el) => {
+            el.classList.toggle('attack-target', parseInt(el.dataset.slot) === targetSlot);
         });
     }
     _setActionState(true);
@@ -624,6 +624,8 @@ function _rerender() {
     const game = window.gameState.game;
     if (!game) return;
 
+    const isMyTurn = game.currentTurn === 'you';
+
     document.querySelectorAll('.hp-label b').forEach(el => {
         const wrap = el.closest('.combatant');
         if (!wrap) return;
@@ -652,10 +654,15 @@ function _rerender() {
     }
 
     const topInfo = document.querySelector('.game-topbar-info:nth-child(3)');
-    const isMyTurn = game.currentTurn === 'you';
     if (topInfo) {
         topInfo.textContent = isMyTurn ? 'YOUR TURN' : 'OPPONENT TURN';
         topInfo.className = 'game-topbar-info' + (isMyTurn ? '' : ' threat');
+    }
+
+    const centerText = document.querySelector('.game-center-text');
+    if (centerText) {
+        centerText.textContent = isMyTurn ? 'YOUR TURN' : "OPPONENT'S TURN";
+        centerText.className   = 'game-center-text ' + (isMyTurn ? 'your-turn' : 'opp-turn');
     }
 
     const tn = document.querySelector('.game-topbar-info b');
