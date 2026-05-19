@@ -5,6 +5,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
 const multer = require('multer');
+const bcrypt = require('bcrypt');
 
 const pool = require('./src/config/db');
 const UserService = require('./src/services/UserService');
