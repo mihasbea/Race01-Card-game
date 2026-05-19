@@ -75,7 +75,7 @@ function initSocketHandler(io) {
         /**
          * Event listener for connection dropouts and client-side closes.
          */
-        socket.on('disconnect', () => {
+        socket.on('disconnect', async  () => {
             console.log('disconnected', socket.id);
             
             const qIndex = queue.findIndex(p => p.socket.id === socket.id);
@@ -105,6 +105,51 @@ function initSocketHandler(io) {
                 if (preGame.p2?.socket) preGame.p2.socket.leave(currentRoomId);
 
                 preGames.delete(currentRoomId);
+            }
+
+            for (const [gameRoomId, game] of games.entries()) {
+                const isP1 = game.p1.socket.id === socket.id;
+                const isP2 = game.p2.socket.id === socket.id;
+
+                if (isP1 || isP2) {
+                    console.log(`[Server] Game ${gameRoomId} ended due to player disconnect. Winner: ${isP1 ? game.p2.username : game.p1.username}`);
+
+                    const winner = isP1 ? game.p2 : game.p1;
+                    const loser = isP1 ? game.p1 : game.p2;
+
+                    try {
+                        const winnerData = await UserService.findById(winner.userId);
+                        const loserData = await UserService.findById(loser.userId);
+
+                        await UserService.updateUser(winner.userId, {
+                            wins: (winnerData?.wins || 0) + 1
+                        });
+
+                        await UserService.updateUser(loser.userId, {
+                            lost: (loserData?.lost || 0) + 1
+                        });
+                    } catch (err) {
+                        console.error('[Server] Failed to update disconnect stats:', err);
+                    }
+
+                    winner.socket.emit('opponentDisconnected', { 
+                        message: `${loser.username} disconnected. You win!`,
+                        isWin: true
+                    });
+
+                    if (gameTurnTimers.has(gameRoomId)) {
+                        const timerData = gameTurnTimers.get(gameRoomId);
+                        if (timerData.timeout) {
+                            clearTimeout(timerData.timeout);
+                        }
+                        gameTurnTimers.delete(gameRoomId);
+                    }
+
+                    games.delete(gameRoomId);
+                    
+                    winner.socket.leave(gameRoomId);
+                    break;
+                }
             }
         });
 
