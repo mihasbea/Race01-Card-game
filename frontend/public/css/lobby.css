@@ -111,48 +111,92 @@
 
 .cmd-stat-key { font-family: var(--F-mono); font-size: 8px; letter-spacing: 1.5px; color: var(--text-dim); text-transform: uppercase; margin-top: 2px; }
 
-.menu-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.menu-nav { display: flex; flex-direction: column; gap: 0; flex: 1; }
 
 .menu-btn {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
+    flex-direction: column;
+    gap: 2px;
+    padding: 16px 14px 16px 46px;
     background: transparent;
-    border: 1px solid transparent;
-    border-left: 2px solid transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
     color: var(--text-mid);
-    font-family: var(--F-mono);
-    font-size: 11px;
-    letter-spacing: 2px;
+    font-family: var(--F-display);
+    font-size: 15px;
+    letter-spacing: 3px;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all var(--trans);
+    transition: color 0.22s ease, background 0.22s ease;
     width: 100%;
     text-align: left;
+    overflow: hidden;
 }
 
-.menu-btn:hover { background: var(--j-blue-lo); border-left-color: var(--j-blue); color: var(--text); }
+.menu-btn::before {
+    content: attr(data-index);
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--F-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--j-blue);
+    opacity: 0.35;
+    transition: opacity 0.22s ease;
+}
+
+.menu-btn:not([data-index])::before {
+    display: none;
+}
+
+.menu-btn:not([data-index]) {
+    padding-left: 16px;
+}
+
+.menu-btn::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0%;
+    background: linear-gradient(to right, rgba(0,212,255,0.09), transparent);
+    transition: width 0.28s ease;
+    pointer-events: none;
+}
+
+.menu-btn:hover {
+    color: var(--text);
+    background: transparent;
+}
+
+.menu-btn:hover::after { width: 100%; }
+.menu-btn:hover::before { opacity: 1; }
+
+.menu-btn-sub {
+    font-family: var(--F-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    opacity: 0.6;
+    transition: opacity 0.22s ease;
+}
+
+.menu-btn:hover .menu-btn-sub { opacity: 1; color: var(--j-blue); }
 
 .menu-btn.featured {
-    background: rgba(0,212,255,0.06);
-    border-color: var(--border-2);
-    border-left-color: var(--j-blue);
     color: var(--j-blue-hi);
 }
+.menu-btn.featured::before { opacity: 0.7; }
 
 .menu-btn:disabled {
-    opacity: 0.35;
+    opacity: 0.28;
     cursor: not-allowed;
-    border-left-color: transparent;
-    color: var(--text-dim);
 }
-
-.menu-btn:disabled:hover {
-    background: transparent;
-    color: var(--text-dim);
-    border-left-color: transparent;
-}
+.menu-btn:disabled:hover::after { width: 0%; }
+.menu-btn:disabled:hover { color: var(--text-mid); }
 
 .menu-btn-icon {
     width: 28px; height: 28px;
@@ -501,4 +545,37 @@
     text-align: center;
     line-height: 1.7;
     max-width: 340px;
+}
+
+.menu-btn-logout {
+    margin-top: auto;
+    padding: 11px 16px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    opacity: 0.45;
+    border-top: 1px solid var(--border-2);
+    border-bottom: none;
+    transition: opacity 0.22s ease, color 0.22s ease;
+}
+
+.menu-btn-logout .menu-btn-sub {
+    color: var(--text-dim);
+    opacity: 0.5;
+}
+
+.menu-btn-logout:hover {
+    opacity: 0.85;
+    color: rgba(255, 80, 80, 0.75);
+    background: transparent;
+}
+
+.menu-btn-logout:hover .menu-btn-sub {
+    color: rgba(255, 80, 80, 0.55);
+    opacity: 1;
+}
+
+.menu-btn-logout:hover::after {
+    background: linear-gradient(to right, rgba(255, 60, 60, 0.06), transparent);
+    width: 100%;
 }

@@ -46,24 +46,24 @@ function renderMenuPage(container) {
 
             <nav class="menu-nav">
             <div class="menu-btn" id="btn-deploy">
-                <div class="menu-btn-icon">⚔</div>
                 Deploy Simulation
+                <span class="menu-btn-sub">Find opponent · Start match</span>
             </div>
             <div class="menu-btn" id="btn-collection">
-                <div class="menu-btn-icon">◈</div>
                 Unit Registry
+                <span class="menu-btn-sub">Browse · 30 combat units</span>
             </div>
             <div class="menu-btn" id="btn-leaderboard">
-                <div class="menu-btn-icon"><i data-lucide="trophy"></i></div>
                 Global Rankings
+                <span class="menu-btn-sub">Top operators worldwide</span>
             </div>
             <div class="menu-btn" id="btn-config">
-                <div class="menu-btn-icon">⚙</div>
                 System Config
+                <span class="menu-btn-sub">Profile · Preferences</span>
             </div>
-            <div class="menu-btn" id="btn-logout" style="margin-top:auto;color:var(--text-dim);">
-                <div class="menu-btn-icon">↩</div>
+            <div class="menu-btn menu-btn-logout" id="btn-logout">
                 Terminate Session
+                <span class="menu-btn-sub">Sign out</span>
             </div>
             </nav>
         </div>
