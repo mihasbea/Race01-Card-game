@@ -69,8 +69,24 @@ function _updateTimerDOM(seconds) {
     const el = document.getElementById('game-timer-val');
     if (!el) return;
     el.textContent = seconds;
+    
     const ring = el.closest('.timer-ring');
-    if (ring) ring.classList.toggle('warning', seconds <= 10);
+    const game = window.gameState.game;
+    const isMyTurn = game && game.currentTurn === 'you';
+
+    if (!isMyTurn) {
+        el.style.color = '#6040a0';
+        if (ring) {
+            ring.style.borderColor = '#6040a0';
+            ring.classList.remove('warning');
+        }
+    } else {
+        el.style.color = '';
+        if (ring) {
+            ring.style.borderColor = '';
+            ring.classList.toggle('warning', seconds <= 10);
+        }
+    }
 }
 
 const JARVIS_LINES = [
@@ -107,6 +123,8 @@ function renderGamePage(container) {
 
     if (game.currentTurn === 'you' && game.turnStartTime && game.serverTime) {
         _startTimer(game.turnStartTime, game.serverTime, game.turnTimeLeft || 30);
+    } else {
+        _updateTimerDOM(30); 
     }
 
     container.innerHTML = _buildLayout(game);
@@ -121,6 +139,9 @@ function _buildLayout(game) {
     const isMyTurn  = game.currentTurn === 'you';
     const sideLabel = game.you.side === 'hero' ? '◈ HEROES' : '⚠ VILLAINS';
     const sideColor = game.you.side === 'hero' ? 'var(--j-blue)' : '#a855f7';
+
+    const timerStyle = !isMyTurn ? 'style="color: #6040a0;"' : '';
+    const ringStyle  = !isMyTurn ? 'style="border-color: #6040a0;"' : '';
 
     return `
     <div class="page" id="page-game">
@@ -142,7 +163,7 @@ function _buildLayout(game) {
             </div>
             <div class="game-topbar-right">
                 <div class="game-timer">
-                    <div class="timer-ring"><span id="game-timer-val">30</span></div>
+                    <div class="timer-ring" ${ringStyle}><span id="game-timer-val" ${timerStyle}>30</span></div>
                     <div class="timer-label">SEC</div>
                 </div>
             </div>
@@ -436,6 +457,22 @@ function _attachSocketListeners() {
         }
         
         _rerender();
+    });
+
+    window.appSocket.on('opponentDisconnected', (data) => {
+        console.log('[Client] Opponent disconnected:', data);
+        
+        _clearTimer();
+        if (_jarvisInterval) clearInterval(_jarvisInterval);
+        selectedCard = null;
+        pendingAttack = null;
+        
+        _showGameOver(data.isWin);
+        
+        setTimeout(() => {
+            window.gameState.game = null;
+            window.appRouter.navigate('lobby');
+        }, 3000);
     });
 
     window.appSocket.on('gameOver', ({ winner }) => {
