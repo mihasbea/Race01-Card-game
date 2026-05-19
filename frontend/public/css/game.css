@@ -132,6 +132,53 @@
     text-transform: uppercase;
 }
 
+#board-player,
+#board-opponent {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+}
+
+#board-player {
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#board-player.has-reserve {
+    transform: translateX(calc(-50% - 130px));
+}
+
+#reserve-wrap {
+    position: absolute;
+    top: 50%;
+    left: calc(50% + 60px); 
+    transform: translateY(-50%);
+    z-index: 2;
+    animation: reserveEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes reserveEnter {
+    from { 
+        opacity: 0; 
+        transform: translate(-20px, -50%); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translate(0, -50%); 
+    }
+}
+
+/* Push hand and opp-hand to the far right in their flex zones */
+.zone-player > .hand-wrap {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.opp-hand-wrap {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
 .game-center {
     height: 40px;
     background: rgba(0,0,0,0.3);
@@ -712,6 +759,10 @@
 }
 
 .gameover-btn:hover { box-shadow: 0 0 24px var(--j-blue-gl); transform: translateY(-1px); }
+
+#reserve-wrap:empty {
+    display: none;
+}
 
 .reserve-card-wrap {
     background: linear-gradient(90deg, rgba(200,160,0,0.08) 0%, transparent 100%);

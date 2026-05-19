@@ -114,6 +114,7 @@ function renderGamePage(container) {
     _jarvisInterval = setInterval(_cycleJarvis, 7000);
     _cycleJarvis();
     _setActionState(game.currentTurn === 'you');
+    _positionReserveWrap();
 }
 
 function _buildLayout(game) {
@@ -174,13 +175,13 @@ function _buildLayout(game) {
             <!-- PLAYER ZONE -->
             <div class="zone-player">
                 ${_renderCombatant(game.you, 'cmd')}
-                <div class="board-slots" id="board-player">
+                <div class="board-slots${game.you.reserveCard ? ' has-reserve' : ''}" id="board-player">
                     ${_renderPlayerBoard(game.you.field)}
                 </div>
 
                 <!-- Reserve card notification -->
                 <div id="reserve-wrap">
-                    ${_renderReserveCard(game.you.reserveCard, isMyTurn)}
+                    ${_renderReserveCard(game.you.reserveCard, isMyTurn, game.you.hand.length)}
                 </div>
 
                 <div class="hand-wrap" id="hand-wrap">
@@ -242,37 +243,44 @@ function _renderCombatant(player, side) {
     </div>`;
 }
 
-function _renderReserveCard(card, isMyTurn) {
+function _renderReserveCard(card, isMyTurn, handCount = 0) {
     if (!card) return '';
+    
+    const isHandFull = handCount >= 7;
+    const isDisabled = !isMyTurn || isHandFull;
+
     return `
-    <div class="reserve-card-wrap" id="reserve-card-section">
-        <div class="reserve-label">⚠ NEW UNIT AVAILABLE IN RESERVE</div>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <div class="hcard reserve-hcard" style="pointer-events:none;">
-                <div class="hcard-inner">
-                    <div class="hcard-top" style="background:var(--gold);"></div>
-                    <div class="hcard-cost-badge">${card.cost}</div>
-                    <div class="hcard-name">${card.name}</div>
-                    <div class="hcard-art">
-                        <div class="hcard-art-bg ${card.art}"></div>
-                        <div class="hcard-art-sym">${card.sym}</div>
-                    </div>
-                    <div class="hcard-stats">
-                        <div class="hstat atk">${card.atk}</div>
-                        <div class="hstat def">${card.def}</div>
-                    </div>
+<div class="reserve-card-wrap" id="reserve-card-section">
+    <div class="reserve-label">⚠ NEW UNIT AVAILABLE IN RESERVE</div>
+    <div style="display:flex; align-items:center; gap:20px; flex-wrap:nowrap;">
+        <div class="hcard reserve-hcard" style="pointer-events:none; flex-shrink:0;">
+            <div class="hcard-inner">
+                <div class="hcard-top" style="background:${window.gameState.game?.you.side==='villain'?'#a855f7':'var(--j-blue)'};"></div>
+                <div class="hcard-cost-badge">${card.cost}</div>
+                <div class="hcard-name">${card.name}</div>
+                <div class="hcard-art">
+                    <div class="hcard-art-bg ${card.art}"></div>
+                    <div class="hcard-art-sym">${card.sym}</div>
                 </div>
-            </div>
-            <div>
-                <div style="font-family:var(--F-mono);font-size:10px;color:var(--text-dim);letter-spacing:1.5px;margin-bottom:8px;">
-                    Taking this card ends your turn.
+                <div class="hcard-stats">
+                    <div class="hstat atk">${card.atk}</div>
+                    <div class="hstat def">${card.def}</div>
                 </div>
-                <button class="btn-take-reserve" id="btn-take-reserve" ${!isMyTurn ? 'disabled' : ''}>
-                    ⬆ TAKE TO HAND
-                </button>
             </div>
         </div>
-    </div>`;
+        
+        <div style="flex-grow:1; min-width:200px;">
+            <div style="font-family:var(--F-mono); font-size:10px; color:var(--text-dim); letter-spacing:1.5px; margin-bottom:8px; white-space:nowrap;">
+                ${isHandFull 
+                    ? '<span style="color:var(--threat-hi);">Hand is full (Max 7)</span>' 
+                    : 'Taking this card ends your turn.'}
+            </div>
+            <button class="btn-take-reserve" id="btn-take-reserve" ${isDisabled ? 'disabled' : ''} style="width:100%; white-space:nowrap;">
+                ⬆ TAKE TO HAND
+            </button>
+        </div>
+    </div>
+</div>`;
 }
 
 function _renderHand(cards = []) {
@@ -355,6 +363,39 @@ function _buildBoardCard(card, side, slotIdx) {
             </div>
         </div>
     </div>`;
+}
+
+function _positionReserveWrap() {
+    requestAnimationFrame(() => {
+        const bp = document.getElementById('board-player');
+        if (!bp) return;
+
+        if (!bp.classList.contains('has-reserve')) {
+            bp.style.transform = '';
+            return;
+        }
+
+        const rw   = document.getElementById('reserve-wrap');
+        const hw   = document.querySelector('.zone-player > .hand-wrap');
+        const zone = document.querySelector('.zone-player');
+        if (!rw || !zone) return;
+
+        const zoneRect = zone.getBoundingClientRect();
+        const zoneCenter = zoneRect.width / 2;   
+        const BOARD_HALF = 171;                  
+        const GAP = 16;                   
+
+        const reserveW = rw.offsetWidth || 290;
+        const hwRect   = hw ? hw.getBoundingClientRect() : null;
+        const handLeft = hwRect ? hwRect.left - zoneRect.left : zoneRect.width - 18;
+
+        const boardCenter = handLeft - GAP - reserveW - GAP - BOARD_HALF;
+        const shift       = boardCenter - zoneCenter;  
+
+        bp.style.transform = `translateX(calc(-50% + ${shift}px))`;
+        rw.style.left = `${boardCenter + BOARD_HALF + GAP}px`;
+        rw.style.transform = 'translateY(-50%)';
+    });
 }
 
 function _setActionState(isMyTurn) {
@@ -602,7 +643,7 @@ function _rerender() {
     if (bp) bp.innerHTML = _renderPlayerBoard(game.you.field);
     if (bo) bo.innerHTML = _renderOpponentBoard(game.opponent.field);
     if (hc) hc.innerHTML = _renderHand(game.you.hand);
-    if (rw) rw.innerHTML = _renderReserveCard(game.you.reserveCard, game.currentTurn === 'you');
+    if (rw) rw.innerHTML = _renderReserveCard(game.you.reserveCard, game.currentTurn === 'you', game.you.hand.length);
     if (oh) {
         oh.innerHTML = Array.from({ length: game.opponent.handCount || 0 })
             .map(() => `<div class="opp-hand-card">◈</div>`).join('')
@@ -629,6 +670,10 @@ function _rerender() {
 
     _setActionState(isMyTurn);
     _reattachClickHandlers();
+
+    const bpEl = document.getElementById('board-player');
+    if (bpEl) bpEl.classList.toggle('has-reserve', !!game.you.reserveCard);
+    _positionReserveWrap();
 }
 
 function _reattachClickHandlers() {
@@ -908,7 +953,7 @@ function _shootProjectile(fromEl, toEl) {
 
     // Animate line extending toward target
     const start = performance.now();
-    const dur   = 350;
+    const dur = 350;
     function step(now) {
         const t = Math.min((now - start) / dur, 1);
         const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;

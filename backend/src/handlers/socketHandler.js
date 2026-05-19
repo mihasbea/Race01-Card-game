@@ -239,6 +239,11 @@ function initSocketHandler(io) {
             const player = isP1 ? game.p1 : game.p2;
             if (game.currentTurnId !== player.userId || !player.reserveCard) return;
 
+            if (player.hand.length >= 7) {
+                socket.emit('gameError', { message: 'Hand is full. Maximum 7 cards.' });
+                return;
+            }
+
             player.hand.push(player.reserveCard);
             player.reserveCard = null;
 
